@@ -19,4 +19,3 @@ fill .env based on the .env.exemple
 - Nom des branches : (Feature/fix/testing)/nom-du-module/nom-de-la-feature
 - Messages de commit : Conventional Commits : feat:, fix:, docs: 
 
-## 
