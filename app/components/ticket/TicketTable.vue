@@ -1,0 +1,62 @@
+<script setup lang="ts">
+import type { Ticket } from '~/types'
+
+defineProps<{
+  tickets: Ticket[]
+  /** Titre du tableau, lu par les lecteurs d'écran. */
+  caption: string
+  pending?: boolean
+  error?: string
+}>()
+</script>
+
+<template>
+  <p v-if="pending" role="status" class="flex items-center gap-2 text-base-content/75">
+    <span class="loading loading-spinner loading-sm" aria-hidden="true"></span>
+    Chargement des tickets…
+  </p>
+
+  <div v-else-if="error" role="alert" class="alert alert-error">
+    <span>{{ error }}</span>
+    <button type="button" class="btn btn-sm">Réessayer</button>
+  </div>
+
+  <UiEmptyState v-else-if="!tickets.length" message="Aucun ticket ne correspond à ces critères." />
+
+  <div
+    v-else
+    role="region"
+    :aria-label="caption"
+    tabindex="0"
+    class="overflow-x-auto rounded-box border border-base-300 bg-base-100"
+  >
+    <table class="table">
+      <caption class="sr-only">{{ caption }}</caption>
+      <thead class="text-base-content/75">
+        <tr>
+          <th scope="col">Sujet</th>
+          <th scope="col">Demandeur</th>
+          <th scope="col">Technicien</th>
+          <th scope="col">Priorité</th>
+          <th scope="col">Statut</th>
+          <th scope="col">Créé le</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="ticket in tickets" :key="ticket.id" class="hover:bg-base-200">
+          <td class="min-w-56">
+            <NuxtLink :to="`/tickets/${ticket.id}`" class="link link-hover font-semibold">{{ ticket.title }}</NuxtLink>
+            <p class="text-xs text-base-content/75">#{{ ticket.id }} · {{ ticket.categoryName }}</p>
+          </td>
+          <td class="whitespace-nowrap">{{ ticket.authorName }}</td>
+          <td class="whitespace-nowrap">{{ ticket.assigneeName ?? 'Non assigné' }}</td>
+          <td><TicketPriorityBadge :priority="ticket.priority" /></td>
+          <td><TicketStatusBadge :status="ticket.status" /></td>
+          <td class="whitespace-nowrap">
+            <NuxtTime :datetime="ticket.createdAt" locale="fr-FR" date-style="short" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
