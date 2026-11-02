@@ -1,75 +1,22 @@
-# Nuxt Minimal Starter
-
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
-
-## Setup
-
-Make sure to install dependencies:
-
-```bash
-# npm
-npm install
-
-# pnpm
+### Setup :
 pnpm install
+fill .env based on the .env.exemple
 
-# yarn
-yarn install
+## Nomenclature :
+- Langue des variables : Anglais
+- Nom des composants : PascalCase
+- Nom des pages et routes : kebab-case
+- Nom des variables et fonctions: camelCase
+- Types et interfaces en PascalCase
 
-# bun
-bun install
-```
+## Prefix - Suffixes
+- useXXX
+- isBoolean
+- handleXXX
+- onXXX
 
-## Development Server
+## Git 
+- Nom des branches : (Feature/fix/testing)/nom-du-module/nom-de-la-feature
+- Messages de commit : Conventional Commits : feat:, fix:, docs: 
 
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## 

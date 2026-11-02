@@ -1,2 +1,40 @@
-@import "tailwindcss";
-@plugin "daisyui";
+/* Tailwind CSS v4 + daisyUI v5 entry point, imported once in main.ts. */
+@import 'tailwindcss';
+
+@plugin 'daisyui' {
+  themes: abstract --default;
+}
+
+/* Theme close to the "Abstract Support" mockups. Contrasts checked for WCAG AA. */
+@plugin 'daisyui/theme' {
+  name: 'abstract';
+  default: true;
+  color-scheme: light;
+
+  --color-base-100: #ffffff;
+  --color-base-200: #f7f6ff;
+  --color-base-300: #e3e1f5;
+  --color-base-content: #3f4363;
+
+  --color-primary: #0b3bdb;
+  --color-primary-content: #ffffff;
+  --color-secondary: #3b3fb5;
+  --color-secondary-content: #ffffff;
+  --color-accent: #e5175b;
+  --color-accent-content: #ffffff;
+  --color-neutral: #2b2f4a;
+  --color-neutral-content: #ffffff;
+
+  --color-info: #2563eb;
+  --color-info-content: #ffffff;
+  --color-success: #15803d;
+  --color-success-content: #ffffff;
+  --color-warning: #b45309;
+  --color-warning-content: #ffffff;
+  --color-error: #c81e4b;
+  --color-error-content: #ffffff;
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+}
