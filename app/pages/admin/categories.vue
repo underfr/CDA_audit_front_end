@@ -1,7 +1,50 @@
 <script setup lang="ts">
-import { categories } from '~/fixtures/testData'
-definePageMeta({roles:["admin"]})
+import { CategoryService } from '~/services/firebase/category.service'
+import type { Category } from '~/types'
+
+definePageMeta({ roles: ['admin'] })
 useHead({ title: 'Catégories' })
+
+const categoryService = new CategoryService()
+
+const categories = ref<Category[]>([])
+const stopListening = categoryService.list((list) => {
+  categories.value = list.sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+})
+onUnmounted(stopListening)
+
+const newName = ref('')
+const errorMessage = ref('')
+
+async function addCategory() {
+  errorMessage.value = ''
+  try {
+    await categoryService.create({ name: newName.value.trim(), active: true })
+    newName.value = ''
+  } catch {
+    errorMessage.value = 'L’ajout de la catégorie a échoué.'
+  }
+}
+
+async function toggleActive(category: Category) {
+  errorMessage.value = ''
+  try {
+    await categoryService.setActive(category.id, !category.active)
+  } catch {
+    errorMessage.value = `La modification de « ${category.name} » a échoué.`
+  }
+}
+
+async function deleteCategory(category: Category) {
+  if (!confirm(`Supprimer définitivement « ${category.name} » ?`)) return
+  errorMessage.value = ''
+  try {
+    await categoryService.delete(category.id)
+  } catch (e) {
+    // delete() lève une erreur avec un message clair si des tickets utilisent la catégorie.
+    errorMessage.value = e instanceof Error ? e.message : 'La suppression a échoué.'
+  }
+}
 </script>
 
 
@@ -12,12 +55,13 @@ useHead({ title: 'Catégories' })
       subtitle="Une catégorie désactivée n’est plus proposée à la création d’un ticket."
     />
 
+    <div v-if="errorMessage" role="alert" class="alert alert-error">{{ errorMessage }}</div>
 
     <div class="grid items-start gap-6 lg:grid-cols-3">
       <UiPanel title="Ajouter une catégorie">
-        <form class="space-y-2" @submit.prevent>
+        <form class="space-y-2" @submit.prevent="addCategory">
           <label for="category-name" class="block text-sm font-semibold">Nom de la catégorie</label>
-          <input id="category-name" name="name" type="text" class="input w-full" maxlength="50" required />
+          <input id="category-name" name="name" v-model="newName" type="text" class="input w-full" maxlength="50" required />
           <button type="submit" class="btn btn-primary w-full">Ajouter</button>
         </form>
       </UiPanel>
@@ -40,12 +84,17 @@ useHead({ title: 'Catégories' })
             </span>
 
             <div class="flex items-center justify-end gap-1">
-              <button type="button" class="btn btn-ghost btn-sm">
+              <button type="button" class="btn btn-ghost btn-sm" @click="toggleActive(category)">
                 {{ category.active ? 'Désactiver' : 'Réactiver' }}
                 <span class="sr-only">la catégorie {{ category.name }}</span>
               </button>
 
-              <button type="button" class="btn btn-square btn-ghost btn-sm" aria-label="Supprimer la catégorie">
+              <button
+                type="button"
+                class="btn btn-square btn-ghost btn-sm"
+                :aria-label="`Supprimer la catégorie ${category.name}`"
+                @click="deleteCategory(category)"
+              >
                 <AppIcon name="trash" />
               </button>
             </div>
