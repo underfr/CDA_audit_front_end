@@ -38,9 +38,5 @@ async function login(email:string, password: string) {
 
     <AuthLoginForm :pending="pending" :error="error" @submit="login" />
 
-    <p class="text-center text-sm">
-      Pas encore de compte ?
-      <NuxtLink to="/register" class="link link-primary">Créer un compte</NuxtLink>
-    </p>
   </div>
 </template>

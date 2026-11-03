@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { activityFeed, analyticsStats, ticketsByStatus, urgentTickets, workloadByTechnician } from '~/fixtures/testData'
-
+definePageMeta({ roles: ['manager'] })
 useHead({ title: 'Pilotage' })
 </script>
 
