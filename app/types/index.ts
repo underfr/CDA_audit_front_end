@@ -92,6 +92,6 @@ export interface StatusTransition {
   label: string
 }
 
-export type TicketFormErrors = Partial<Record<'title' | 'description' | 'categoryId' | 'priority', string>>
+export type TicketFormErrors = Partial<Record<'title' | 'description' | 'categoryId' | 'priority' | 'attachment', string>>
 
 export type RegisterFormErrors = Partial<Record<'displayName' | 'email' | 'password' | 'passwordConfirm', string>>
