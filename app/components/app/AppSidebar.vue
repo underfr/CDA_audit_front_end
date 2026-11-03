@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import type { NavItem } from '~/types'
+import { signOut } from 'firebase/auth'
 
 defineProps<{ items: NavItem[] }>()
+
+const { $auth } = useNuxtApp()
+
+async function logout(){
+  await signOut($auth)
+  await navigateTo('/login')
+}
 </script>
 
 <template>
@@ -26,7 +34,7 @@ defineProps<{ items: NavItem[] }>()
         <AppIcon name="plus" />
         Nouveau ticket
       </NuxtLink>
-      <button type="button" class="btn btn-ghost w-full justify-start">
+      <button type="button" class="btn btn-ghost w-full justify-start" @click="logout()">
         <AppIcon name="logout" />
         Déconnexion
       </button>
