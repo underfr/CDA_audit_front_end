@@ -3,9 +3,9 @@
 - **Objectif :** Vérifier si le formulaire de création de ticket est fonctionnelle
 - **Préparation :** Compte connecté, dépard du test page new-ticket
 - **Données utilisées :** 
-    - titre du ticket
-    - image 
-    - description
+    - titre du ticket : "Accès VPN expiré"
+    - image : captureVPN.png
+    - description : "Renouvellement urgent pour déplacement à l'étranger." 
 
 - **Actions :**
   1. Se connecter

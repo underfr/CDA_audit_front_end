@@ -2,7 +2,7 @@
 
 **Quels cas sont les plus importants à vérifier en premier et pourquoi ?**
 
-AUTH-01 / AUTH-02 / DASH-01 / DASH-03 / TICK-01 / TICK-02 / TICK-08 / COMM-01 / COMM-02
+AUTH-01 / AUTH-02 / DASH-01 / TICK-01 / TICK-02 / TICK-08 / COMM-01 / COMM-02
 
 Ces tests sont fondamentaux pour s'assurer que les fonctionnalité de base du projet soit fonctionnelle et sans bug d'utilisation. 
 

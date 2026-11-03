@@ -2,7 +2,12 @@
 
 - **Objectif :** Vérifier si le formulaire de connexion bloque si des informations ne sont pas correcte.
 - **Préparation :** Compte nom connecté, dépard du test page login
-- **Données utilisées :** Identifiant / mot de passe
+- **Données utilisées :** 
+Identifiant : test@gmail.com
+mot de passe : Jean@31!
+ 
+Identifiant : jean.jacque@mail.com
+mot de passe : unAutreMotDePasse
 - **Actions :**
   1. Se rendre sur la page login
   2. Saisir de mauvaise informations de connexion

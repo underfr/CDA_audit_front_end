@@ -2,7 +2,9 @@
 
 - **Objectif :** Vérifier si le formulaire de connexion est fonctionnelle
 - **Préparation :** Compte nom connecté, dépard du test page login
-- **Données utilisées :** Identifiant / mot de passe
+- **Données utilisées :** 
+Identifiant : jean.jacque@mail.com
+mot de passe : Jean@31!
 - **Actions :**
   1. Se rendre sur la page login
   2. Saisir les informations du compte
