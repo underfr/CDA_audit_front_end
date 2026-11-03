@@ -1,5 +1,11 @@
 // Modèle de données (voir le cadrage)
 
+declare module '#app' {
+  interface PageMeta {
+    roles?: Role[]
+  }
+}
+
 export type Role = 'collaborator' | 'technician' | 'manager' | 'admin'
 
 export type TicketStatus = 'new' | 'in_progress' | 'resolved' | 'closed'
@@ -69,6 +75,7 @@ export interface NavItem {
   label: string
   to: string
   icon: IconName
+  roles?: Role[]
 }
 
 export interface Breadcrumb {
@@ -93,5 +100,3 @@ export interface StatusTransition {
 }
 
 export type TicketFormErrors = Partial<Record<'title' | 'description' | 'categoryId' | 'priority', string>>
-
-export type RegisterFormErrors = Partial<Record<'displayName' | 'email' | 'password' | 'passwordConfirm', string>>
