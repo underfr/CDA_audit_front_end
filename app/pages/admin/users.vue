@@ -40,7 +40,7 @@ useHead({ title: 'Utilisateurs' })
               </select>
             </td>
             <td>
-              <span class="badge badge-sm" :class="user.active ? 'badge-success' : 'badge-ghost'">
+              <span class="badge badge-sm w-20" :class="user.active ? 'badge-success' : 'badge-ghost'">
                 {{ user.active ? 'Actif' : 'Désactivé' }}
               </span>
             </td>

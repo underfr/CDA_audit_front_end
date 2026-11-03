@@ -41,3 +41,7 @@
   --depth: 0;
   --noise: 0;
 }
+
+.menu-active {
+  background-color:#1d4ed8;
+}

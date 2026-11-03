@@ -12,5 +12,5 @@ const badgeClasses: Record<TicketStatus, string> = {
 </script>
 
 <template>
-  <span class="badge badge-outline badge-sm whitespace-nowrap" :class="badgeClasses[status]">{{ STATUS_LABELS[status] }}</span>
+  <span class="badge badge-outline badge-sm whitespace-nowrap w-17" :class="badgeClasses[status]">{{ STATUS_LABELS[status] }}</span>
 </template>

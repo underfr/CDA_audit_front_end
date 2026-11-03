@@ -63,7 +63,7 @@ export type HistoryEntry = HistoryBase & (
 
 // Interface
 
-export type IconName = 'dashboard' | 'ticket' | 'chart' | 'users' | 'tag' | 'plus' | 'logout' | 'menu'
+export type IconName = 'dashboard' | 'ticket' | 'chart' | 'users' | 'tag' | 'plus' | 'logout' | 'menu' | 'bell' | 'clock' | 'trash'
 
 export interface NavItem {
   label: string
