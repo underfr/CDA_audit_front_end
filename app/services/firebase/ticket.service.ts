@@ -11,11 +11,12 @@ import {
 	query,
 	update,
 	type DatabaseReference,
+	type Query
 } from "firebase/database";
-import type { Ticket, TicketStatus } from "~/types";
+import type { Ticket, TicketStatus, UserProfile } from "~/types";
 
 /** Ce que l'appelant fournit : id et dates sont gérés par la base. */
-export type NewTicket = Omit<Ticket, "id" | "createdAt" | "updatedAt" | "firstResponseAt" | "closedAt">;
+export type NewTicket = Omit<Ticket, "id" | "createdAt" | "updatedAt" | "firstResponseAt" | "closedAt" | "resolvedAt">;
 
 /**
  * Accès aux tickets stockés dans la Realtime Database (nœud `tickets`).
@@ -30,6 +31,16 @@ export class TicketService {
 	constructor() {
 		const { $db } = useNuxtApp();
 		this.ticketsRef = ref($db, "tickets");
+	}
+
+	private watchList(source: Query, callback: (tickets: Ticket[]) => void) {
+		return onValue(source, (snapshot) => {
+			const tickets: Ticket[] = [];
+			snapshot.forEach((ticketSnapshot) => {
+				tickets.push(this.toTicket(ticketSnapshot));
+			});
+			callback(tickets);
+		});
 	}
 
 	/**
@@ -50,7 +61,8 @@ export class TicketService {
 			createdAt: new Date(data.createdAt),
 			updatedAt: new Date(data.updatedAt),
 			firstResponseAt: data.firstResponseAt ? new Date(data.firstResponseAt) : null,
-			closedAt: data.closedAt ? new Date(data.closedAt) : null
+			closedAt: data.closedAt ? new Date(data.closedAt) : null,
+			resolvedAt: data.resolvedAt ? new Date(data.resolvedAt) : null
 		};
 	}
 
@@ -119,13 +131,13 @@ export class TicketService {
 	 * @returns une fonction à appeler (par exemple dans `onUnmounted`) pour arrêter l'écoute.
 	 */
 	list(callback: (tickets: Ticket[]) => void) {
-		return onValue(this.ticketsRef, (snapshot) => {
-			const tickets: Ticket[] = [];
-			snapshot.forEach((ticketSnapshot) => {
-				tickets.push(this.toTicket(ticketSnapshot));
-			});
-			callback(tickets);
-		});
+		return this.watchList(this.ticketsRef, callback)
+	}
+
+	listFor(user: UserProfile, callback: (tickets: Ticket[])=>void){
+		if (user.role === "manager") return this.list(callback)
+		const field = user.role === "technician" ? "assigneeId" : "authorId"
+		return this.watchList(query(this.ticketsRef, orderByChild(field), equalTo(user.id)), callback)
 	}
 
 	/**
@@ -144,17 +156,12 @@ export class TicketService {
 			updatedAt: serverTimestamp(),
 			...(from === "new" && status === "in_progress" ? { firstResponseAt: serverTimestamp() } : {}),
 			...(status === "closed" ? { closedAt: serverTimestamp() } : {}),
+			...(status === "resolved" ? { resolvedAt: serverTimestamp() } : {})
 		});
 	}
 
 	listByAuthor(authorId: string, callback: (tickets: Ticket[]) => void){
-		return onValue(query(this.ticketsRef, orderByChild("authorId"),equalTo(authorId)), (snapshot)=>{
-			const tickets: Ticket[]= []
-			snapshot.forEach((ticketSnapshot)=>{
-				tickets.push(this.toTicket(ticketSnapshot))
-			})
-			callback(tickets)
-		})
+		return this.watchList(query(this.ticketsRef, orderByChild("authorId"), equalTo(authorId)), callback)
 	}
 
 }

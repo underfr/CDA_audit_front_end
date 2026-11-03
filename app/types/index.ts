@@ -42,6 +42,7 @@ export interface Ticket {
   updatedAt: Date
   firstResponseAt: Date | null
   closedAt: Date | null
+  resolvedAt: Date | null
 }
 
 export interface TicketComment {

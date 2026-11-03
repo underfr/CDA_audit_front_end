@@ -10,6 +10,19 @@ function startOfWeek(now: Date) {
     return monday
 }
 
+export const isOpen = (ticket: Ticket) => ticket.status === "new" || ticket.status === "in_progress"
+
+export function computeTicketListStats(tickets: Ticket[], now = new Date()): StatItem[] {
+    const dayAgo = now.getTime() - DAY
+
+    return  [
+        { label: 'Urgents', value: tickets.filter(t => isOpen(t) && t.priority === 'urgent').length },
+        { label: 'En cours', value: tickets.filter(t => t.status === 'in_progress').length },
+        { label: 'Non affectés', value: tickets.filter(t => isOpen(t) && t.assigneeId === null).length },
+        { label: 'Résolus (24 h)', value: tickets.filter(t => t.resolvedAt && t.resolvedAt.getTime() >= dayAgo).length },
+    ]
+}
+
 export function formatDuration(ms: number) {
     const minutes = Math.round(ms / MINUTE)
     if (minutes < 60) return `${minutes} min`
