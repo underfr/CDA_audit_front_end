@@ -6,13 +6,16 @@ import {
 	ref,
 	remove,
 	serverTimestamp,
+	equalTo,
+	orderByChild,
+	query,
 	update,
 	type DatabaseReference,
 } from "firebase/database";
 import type { Ticket, TicketStatus } from "~/types";
 
 /** Ce que l'appelant fournit : id et dates sont gérés par la base. */
-export type NewTicket = Omit<Ticket, "id" | "createdAt" | "updatedAt">;
+export type NewTicket = Omit<Ticket, "id" | "createdAt" | "updatedAt" | "firstResponseAt" | "closedAt">;
 
 /**
  * Accès aux tickets stockés dans la Realtime Database (nœud `tickets`).
@@ -46,6 +49,8 @@ export class TicketService {
 			assigneeName: data.assigneeName ?? null,
 			createdAt: new Date(data.createdAt),
 			updatedAt: new Date(data.updatedAt),
+			firstResponseAt: data.firstResponseAt ? new Date(data.firstResponseAt) : null,
+			closedAt: data.closedAt ? new Date(data.closedAt) : null
 		};
 	}
 
@@ -124,18 +129,32 @@ export class TicketService {
 	}
 
 	/**
-	 * Change le statut d'un ticket et met à jour `updatedAt`.
-	 * Les transitions autorisées (§4.1 du cadrage) doivent être vérifiées
-	 * par les règles de sécurité.
-	 *
-	 * @param id - l'id du ticket à modifier.
-	 * @param status - le nouveau statut.
-	 * @returns une Promise résolue une fois l'écriture terminée.
-	 */
-	updateStatus(id: string, status: TicketStatus) {
+     * Change le statut d'un ticket et met à jour `updatedAt`.
+     * Les transitions autorisées (§4.1 du cadrage) doivent être vérifiées
+     * par les règles de sécurité.
+     *
+     * @param id - l'id du ticket à modifier.
+     * @param from
+     * @param status - le nouveau statut.
+     * @returns une Promise résolue une fois l'écriture terminée.
+     */
+	updateStatus(id: string, from: TicketStatus, status: TicketStatus) {
 		return update(child(this.ticketsRef, id), {
 			status,
 			updatedAt: serverTimestamp(),
+			...(from === "new" && status === "in_progress" ? { firstResponseAt: serverTimestamp() } : {}),
+			...(status === "closed" ? { closedAt: serverTimestamp() } : {}),
 		});
 	}
+
+	listByAuthor(authorId: string, callback: (tickets: Ticket[]) => void){
+		return onValue(query(this.ticketsRef, orderByChild("authorId"),equalTo(authorId)), (snapshot)=>{
+			const tickets: Ticket[]= []
+			snapshot.forEach((ticketSnapshot)=>{
+				tickets.push(this.toTicket(ticketSnapshot))
+			})
+			callback(tickets)
+		})
+	}
+
 }

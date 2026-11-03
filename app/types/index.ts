@@ -40,6 +40,8 @@ export interface Ticket {
   assigneeName: string | null
   createdAt: Date
   updatedAt: Date
+  firstResponseAt: Date | null
+  closedAt: Date | null
 }
 
 export interface TicketComment {
