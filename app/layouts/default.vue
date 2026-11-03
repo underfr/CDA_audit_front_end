@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { currentUser, navigation } from '~/fixtures/testData'
+const profile = useProfile()
+const items = computed(()=> NAVIGATION.filter(item=>!item.roles || (profile.value && item.roles.includes(profile.value.role))))
 </script>
 
 <template>
@@ -15,7 +16,7 @@ import { currentUser, navigation } from '~/fixtures/testData'
       <input id="app-drawer" type="checkbox" class="drawer-toggle" />
 
       <div class="drawer-content flex min-w-0 flex-col">
-        <AppTopbar :user="currentUser" />
+        <AppTopbar v-if="profile" :user="profile" />
         <main id="main" tabindex="-1" class="mx-auto w-full max-w-7xl flex-1 p-4 focus:outline-none sm:p-6 lg:p-8">
           <slot />
         </main>
@@ -23,7 +24,7 @@ import { currentUser, navigation } from '~/fixtures/testData'
 
       <div class="drawer-side z-20">
         <label for="app-drawer" aria-label="Fermer le menu" class="drawer-overlay"></label>
-        <AppSidebar :items="navigation" />
+        <AppSidebar :items="items" />
       </div>
     </div>
   </div>

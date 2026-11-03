@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { categories } from '~/fixtures/testData'
-
+definePageMeta({roles:["admin"]})
 useHead({ title: 'Catégories' })
 </script>
 
