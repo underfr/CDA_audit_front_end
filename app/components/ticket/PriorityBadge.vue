@@ -12,5 +12,5 @@ const badgeClasses: Record<TicketPriority, string> = {
 </script>
 
 <template>
-  <span class="badge badge-sm whitespace-nowrap" :class="badgeClasses[priority]">{{ PRIORITY_LABELS[priority] }}</span>
+  <span class="badge badge-sm whitespace-nowrap w-17" :class="badgeClasses[priority]">{{ PRIORITY_LABELS[priority] }}</span>
 </template>
