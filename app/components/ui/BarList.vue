@@ -8,7 +8,7 @@ defineProps<{
 </script>
 
 <template>
-  <ul class="space-y-4">
+  <ul class="space-y-4 h-60">
     <li v-for="item in items" :key="item.label">
       <div class="mb-1 flex items-baseline justify-between gap-2 text-sm">
         <span class="font-medium">{{ item.label }}</span>

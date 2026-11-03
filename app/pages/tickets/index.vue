@@ -1,7 +1,22 @@
 <script setup lang="ts">
-import { categories, ticketListStats, tickets } from '~/fixtures/testData'
+import { categories } from '~/fixtures/testData'
+import { TicketService } from '~/services/firebase/ticket.service'
+import type { Ticket } from '~/types'
 
+definePageMeta({ roles: ['collaborator', 'technician', 'manager'] })
 useHead({ title: 'Tickets' })
+
+const profile = useProfile()
+const tickets = ref<Ticket[]>([])
+const pending = ref(true)
+
+const stopListening = new TicketService().listFor(profile.value!, (list) => {
+  tickets.value = list.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+  pending.value = false
+})
+onUnmounted(stopListening)
+
+const stats = computed(() => computeTicketListStats(tickets.value))
 </script>
 
 <template>
@@ -18,7 +33,7 @@ useHead({ title: 'Tickets' })
     <section aria-labelledby="stats-title">
       <h2 id="stats-title" class="sr-only">Indicateurs</h2>
       <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <li v-for="stat in ticketListStats" :key="stat.label">
+        <li v-for="stat in stats" :key="stat.label">
           <UiStatCard v-bind="stat" />
         </li>
       </ul>
@@ -26,7 +41,7 @@ useHead({ title: 'Tickets' })
 
     <TicketFilters :categories="categories" />
 
-    <TicketTable :tickets="tickets" caption="Liste des tickets" />
+    <TicketTable :tickets="tickets" :pending="pending" caption="Liste des tickets" />
 
     <nav aria-label="Pagination" class="flex flex-wrap items-center justify-between gap-4">
       <p class="text-sm text-base-content/75">Affichage de 1 à 8 sur 24 tickets</p>

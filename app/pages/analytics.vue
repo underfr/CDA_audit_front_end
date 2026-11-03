@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { activityFeed, analyticsStats, ticketsByStatus, urgentTickets, workloadByTechnician } from '~/fixtures/testData'
-
+definePageMeta({ roles: ['manager'] })
 useHead({ title: 'Pilotage' })
 </script>
 
@@ -12,7 +12,7 @@ useHead({ title: 'Pilotage' })
       <h2 id="stats-title" class="sr-only">Indicateurs clés</h2>
       <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <li v-for="stat in analyticsStats" :key="stat.label">
-          <UiStatCard v-bind="stat" />
+          <UiStatCard v-bind="stat"/>
         </li>
       </ul>
     </section>

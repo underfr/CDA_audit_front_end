@@ -21,7 +21,7 @@ useHead({ title: `Ticket #${ticket.id}` })
     <div class="grid items-start gap-6 xl:grid-cols-3">
       <div class="min-w-0 space-y-6 xl:col-span-2">
         <UiPanel title="Description">
-          <p class="whitespace-pre-line break-words">{{ ticket.description }}</p>
+          <p class="whitespace-pre-line wrap-break-words">{{ ticket.description }}</p>
         </UiPanel>
 
         <UiPanel title="Commentaires">

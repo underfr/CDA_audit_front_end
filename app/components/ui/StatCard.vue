@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="stats w-full border border-base-300 bg-base-100">
+  <div class="stats w-full border border-base-300 bg-base-100 h-27">
     <div class="stat">
       <div class="stat-title whitespace-normal text-base-content/75">{{ label }}</div>
       <div class="stat-value text-3xl text-primary">{{ value }}</div>

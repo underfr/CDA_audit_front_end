@@ -1,97 +1,119 @@
 // Modèle de données (voir le cadrage)
 
-export type Role = 'collaborator' | 'technician' | 'manager' | 'admin'
+declare module "#app" {
+	interface PageMeta {
+		roles?: Role[];
+	}
+}
 
-export type TicketStatus = 'new' | 'in_progress' | 'resolved' | 'closed'
+export type Role = "collaborator" | "technician" | "manager" | "admin";
 
-export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent'
+export type TicketStatus = "new" | "in_progress" | "resolved" | "closed";
+
+export type TicketPriority = "low" | "medium" | "high" | "urgent";
 
 export interface UserProfile {
-  id: string
-  displayName: string
-  email: string
-  role: Role
-  active: boolean
+	id: string;
+	displayName: string;
+	email: string;
+	role: Role;
+	active: boolean;
 }
 
 export interface Category {
-  id: string
-  name: string
-  active: boolean
+	id: string;
+	name: string;
+	active: boolean;
 }
 
 export interface Ticket {
-  id: string
-  title: string
-  description: string
-  categoryId: string
-  categoryName: string
-  priority: TicketPriority
-  status: TicketStatus
-  authorId: string
-  authorName: string
-  assigneeId: string | null
-  assigneeName: string | null
-  createdAt: Date
-  updatedAt: Date
+	id: string;
+	title: string;
+	description: string;
+	categoryId: string;
+	categoryName: string;
+	priority: TicketPriority;
+	status: TicketStatus;
+	authorId: string;
+	authorName: string;
+	assigneeId: string | null;
+	assigneeName: string | null;
+	createdAt: Date;
+	updatedAt: Date;
+	firstResponseAt: Date | null;
+	closedAt: Date | null;
+	resolvedAt: Date | null;
 }
 
+export type TicketFormData = {
+	title: string;
+	categoryId: string;
+	priority: TicketPriority;
+	description: string;
+	attachments: File[];
+};
+
 export interface TicketComment {
-  id: string
-  ticketId: string
-  authorId: string
-  authorName: string
-  body: string
-  createdAt: Date
+	id: string;
+	ticketId: string;
+	authorId: string;
+	authorName: string;
+	body: string;
+	createdAt: Date;
 }
 
 interface HistoryBase {
-  id: string
-  ticketId: string
-  /** Renseigné quand l'entrée est affichée hors du ticket (flux d'activité). */
-  ticketTitle?: string
-  actorName: string
-  createdAt: Date
+	id: string;
+	ticketId: string;
+	/** Renseigné quand l'entrée est affichée hors du ticket (flux d'activité). */
+	ticketTitle?: string;
+	actorName: string;
+	createdAt: Date;
 }
 
-export type HistoryEntry = HistoryBase & (
-  | { type: 'created' }
-  | { type: 'status', from: TicketStatus, to: TicketStatus }
-  | { type: 'priority', from: TicketPriority, to: TicketPriority }
-  | { type: 'assignment', from: string | null, to: string }
-)
+export type HistoryEntry = HistoryBase &
+	(
+		| { type: "created" }
+		| { type: "status"; from: TicketStatus; to: TicketStatus }
+		| { type: "priority"; from: TicketPriority; to: TicketPriority }
+		| { type: "assignment"; from: string | null; to: string }
+	);
 
 // Interface
 
-export type IconName = 'dashboard' | 'ticket' | 'chart' | 'users' | 'tag' | 'plus' | 'logout' | 'menu'
+export type IconName = 'dashboard' | 'ticket' | 'chart' | 'users' | 'tag' | 'plus' | 'logout' | 'menu' | 'bell' | 'clock' | 'trash'
 
 export interface NavItem {
-  label: string
-  to: string
-  icon: IconName
+	label: string;
+	to: string;
+	icon: IconName;
+	roles?: Role[];
 }
 
 export interface Breadcrumb {
-  label: string
-  to?: string
+	label: string;
+	to?: string;
 }
 
 export interface StatItem {
-  label: string
-  value: number | string
-  hint?: string
+	label: string;
+	value: number | string;
+	hint?: string;
 }
 
 export interface BarItem {
-  label: string
-  value: number
+	label: string;
+	value: number;
 }
 
 export interface StatusTransition {
-  to: TicketStatus
-  label: string
+	to: TicketStatus;
+	label: string;
 }
 
-export type TicketFormErrors = Partial<Record<'title' | 'description' | 'categoryId' | 'priority', string>>
-
-export type RegisterFormErrors = Partial<Record<'displayName' | 'email' | 'password' | 'passwordConfirm', string>>
+export type TicketFormErrors = Partial<
+	Record<
+		"title" | "description" | "categoryId" | "priority" | "attachment",
+		string
+	>
+>;
