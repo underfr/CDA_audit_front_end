@@ -173,7 +173,7 @@
 				@change="onFileChange"
 			/>
 			<p id="ticket-attachment-hint" class="text-sm text-base-content/75">
-				PNG, JPG ou PDF, 2 Mo maximum par fichier, 10 fichiers maximum
+				PNG, JPG ou PDF, 2 Mo maximum par fichier, 3 fichiers maximum
 			</p>
 			<p
 				v-if="errors.attachment"
@@ -198,6 +198,31 @@
 				{{ pending ? "Envoi en cours…" : "Envoyer le ticket" }}
 			</button>
 		</div>
+
+		<!-- Confirmation modal -->
+		<dialog
+			ref="confirmDialog"
+			class="modal"
+			aria-labelledby="confirm-title"
+		>
+			<div class="modal-box">
+				<h3 id="confirm-title" class="text-lg font-bold">
+					Envoyer le ticket ?
+				</h3>
+				<p class="py-4">
+					Vérifiez vos informations : une fois envoyé, le ticket sera
+					transmis au support.
+				</p>
+				<div class="modal-action">
+					<button type="button" class="btn btn-ghost" @click="closeConfirm">
+						Modifier
+					</button>
+					<button type="button" class="btn btn-primary" @click="confirmSubmit">
+						Confirmer l’envoi
+					</button>
+				</div>
+			</div>
+		</dialog>
 	</form>
 </template>
 
@@ -229,7 +254,7 @@ const isCategoryValid = computed(()=>
 )
 // Priority 
 const priority = ref<TicketPriority>("medium");
-const description = ref("");
+
 
 // Attachment
 const attachments = ref<File[]>([])
@@ -248,13 +273,32 @@ const isAttachmentValid = computed(()=>
 
 )
 
+// Description
+const description = ref("");
+const isDescriptionValid = computed(()=>
+	description.value.trim().length >= 10 && description.value.trim().length <= 2000
+)
+
 const emit = defineEmits<{
 	submit: [data: { title: string; categoryId: string; priority: TicketPriority; description: string; attachments: File[] }]
 }>()
 
 function handleSubmit() {
-	if (!isTitleValid.value || !isCategoryValid.value || isAttachmentValid.value ) return
+	if (!isTitleValid.value || !isCategoryValid.value || !isAttachmentValid.value || !isDescriptionValid.value ) return
 
+	// Formulaire valide : on demande confirmation avant d'envoyer
+	confirmDialog.value?.showModal()
+}
+
+// Confirmation modal
+const confirmDialog = ref<HTMLDialogElement | null>(null)
+
+function closeConfirm() {
+	confirmDialog.value?.close()
+}
+
+function confirmSubmit() {
+	closeConfirm()
 	emit("submit", {
 		title: title.value.trim(),
 		categoryId: categoryId.value,
