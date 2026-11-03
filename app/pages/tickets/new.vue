@@ -1,9 +1,3 @@
-<script setup lang="ts">
-import { activeCategories } from '~/fixtures/testData'
-
-useHead({ title: 'Nouveau ticket' })
-</script>
-
 <template>
   <div class="space-y-6">
     <UiPageHeader
@@ -14,7 +8,11 @@ useHead({ title: 'Nouveau ticket' })
 
     <div class="grid items-start gap-6 xl:grid-cols-3">
       <UiPanel title="Votre demande" class="xl:col-span-2">
-        <TicketForm :categories="activeCategories" />
+        <TicketForm 
+			:categories="activeCategories"
+			:pending="pending"
+			:error="error" 
+			@submit="onSubmit"/>
       </UiPanel>
 
       <UiPanel title="Pour un traitement rapide">
@@ -28,3 +26,42 @@ useHead({ title: 'Nouveau ticket' })
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { activeCategories } from '~/fixtures/testData'
+import { TicketService } from '~/services/firebase/ticket.service'
+
+
+useHead({ title: 'Nouveau ticket' })
+
+const pending = ref(false)
+const error = ref("")
+const profile= useProfile()
+const ticketService = new TicketService
+
+async function onSubmit(data:TicketFormData){
+	const {attachments , ...fields }= data
+	const category = activeCategories.find((c) => c.id === fields.categoryId)
+
+	pending.value = true
+	error.value = ""
+
+	try{
+		await ticketService.create({
+			...fields,
+			categoryName: category?.name ?? "",
+			authorId: profile.value!.id,
+			authorName: profile.value!.displayName,
+			status: "new",
+			assigneeId: null,
+			assigneeName: null,
+		})
+		await navigateTo("/tickets")
+	}catch(e){
+		error.value = "Le ticket n'a pas pu être crée. Réessayez"
+	}finally{
+		pending.value = false
+	}
+	
+}
+</script>
