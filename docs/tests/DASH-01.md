@@ -8,13 +8,11 @@
   1. Se rendre sur la page Dashboard
   
 - **Résultat attendu :** L'utilisateur doit être redirigé vers la page login.
-- **Résultat obtenu :** [À compléter après le test]
-- **Statut :** non exécuté
+- **Résultat obtenu :** La page dashboard est bien protégé si u n utilisateur n'est pas connecté. 
+- **Statut :** exécuté
 
 Statuts du test :
 
 - **Réussi** : le résultat obtenu correspond au résultat attendu.
-- **Échoué** : le résultat obtenu ne correspond pas au résultat attendu.
-- **Bloqué** : un problème empêche d’effectuer la vérification.
-- **Non exécuté** : le test n’a pas été lancé.
+
 

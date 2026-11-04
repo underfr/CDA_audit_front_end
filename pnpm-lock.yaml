@@ -33,6 +33,9 @@ importers:
       cypress:
         specifier: ^16.2.1
         version: 16.2.1
+      cypress-real-events:
+        specifier: ^1.15.1
+        version: 1.15.1(cypress@16.2.1)
 
 packages:
 
@@ -1812,6 +1815,11 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+
+  cypress-real-events@1.15.1:
+    resolution: {integrity: sha512-BiTyqYcNHiIFWfSLRn3H+TgTvpnTGOKfl4Brz51yeSGKMxBbD60wtRQw31nII00yQ67Xg3C18mU8lqUxDN3OUA==}
+    peerDependencies:
+      cypress: ^4.x || ^5.x || ^6.x || ^7.x || ^8.x || ^9.x || ^10.x || ^11.x || ^12.x || ^13.x || ^14.x || ^15.x || ^16.x
 
   cypress@16.2.1:
     resolution: {integrity: sha512-3Vqf1Krr92hKww/Owob9JrDO7TgBCR2ct+OQrvBOFGSnoGsikL4YF5arqDrJb+SM8Fzi7xXIeVmCeaOqJKPhRA==}
@@ -5973,6 +5981,10 @@ snapshots:
       postcss-calc: 11.2.3(postcss@8.5.32)
 
   csstype@3.2.3: {}
+
+  cypress-real-events@1.15.1(cypress@16.2.1):
+    dependencies:
+      cypress: 16.2.1
 
   cypress@16.2.1:
     dependencies:

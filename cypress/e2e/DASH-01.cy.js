@@ -1,12 +1,12 @@
 describe('Abstract Support', () => {
-  it('passes', () => {
-    cy.visit('http://localhost:3000/login')
-    
-  })
+  it('Redirige vers /login si on accède au dashboard sans être connecté', () => {
+    cy.visit('http://localhost:3000/dashboard', {
+      onBeforeLoad(win) {
+        win.indexedDB.deleteDatabase('firebaseLocalStorageDb')
+      },
+    })
 
-  it('Accès à la page sans être connecté',()=>{
-    cy.visit('http://localhost:3000/dashboard')
-    cy.location('pathname').should('eq','/dashboard')
-    
+    cy.location('pathname').should('eq', '/login')
+    cy.get('input[name="email"]').should('be.visible')
   })
 })

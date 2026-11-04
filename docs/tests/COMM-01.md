@@ -3,10 +3,11 @@
 - **Objectif :** Vérifier si le formulaire de création de commentaire est fonctionnelle.
 - **Préparation :** Compte connecté, dépard du test page ticket
 - **Données utilisées :** 
-    Identifiant 
-    Mot de passe
+    Identifiant : jean.jacque@mail.com
+    mot de passe : Jean@31!
 
-    Contenu du commentaire : "Je suis un commentaire valide"
+    titre du ticket : Mot de passe expiré, compte verrouillé
+    Contenu du commentaire : "Je suis un commentaire "
 
 - **Actions :**
   1. Se connecter
@@ -17,13 +18,11 @@
   6. Soumettre le formulaire
   7. Vérifier la présence du message "Votre commentaire à bien été créer."
 - **Résultat attendu :** Un message de confirmation "Votre commentaire à bien été créer."
-- **Résultat obtenu :** [À compléter après le test]
-- **Statut :** non exécuté
+- **Résultat obtenu :** Le commentaire à bien été créer
+- **Statut :** exécuté
 
 Statuts du test   :
 
 - **Réussi** : le résultat obtenu correspond au résultat attendu.
-- **Échoué** : le résultat obtenu ne correspond pas au résultat attendu.
-- **Bloqué** : un problème empêche d’effectuer la vérification.
-- **Non exécuté** : le test n’a pas été lancé.
+
 

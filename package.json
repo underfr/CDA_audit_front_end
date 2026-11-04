@@ -20,6 +20,7 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
-    "cypress": "^16.2.1"
+    "cypress": "^16.2.1",
+    "cypress-real-events": "^1.15.1"
   }
 }
