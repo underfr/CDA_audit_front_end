@@ -199,7 +199,7 @@ export class TicketService {
 	}
 
 	listFor(user: UserProfile, callback: (tickets: Ticket[])=>void){
-		if (user.role === "manager") return this.list(callback)
+		if (user.role === "manager" || user.role === "admin") return this.list(callback)
 		const field = user.role === "technician" ? "assigneeId" : "authorId"
 		return this.watchList(query(this.ticketsRef, orderByChild(field), equalTo(user.id)), callback)
 	}
@@ -224,10 +224,6 @@ export class TicketService {
 			{ type: "status", from: ticket.status, to: status },
 			actor,
 		);
-	}
-
-	listByAuthor(authorId: string, callback: (tickets: Ticket[]) => void){
-		return this.watchList(query(this.ticketsRef, orderByChild("authorId"), equalTo(authorId)), callback)
 	}
 
 	/**
