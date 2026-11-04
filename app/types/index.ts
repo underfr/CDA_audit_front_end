@@ -43,6 +43,7 @@ export interface Ticket {
 	firstResponseAt: Date | null;
 	closedAt: Date | null;
 	resolvedAt: Date | null;
+	number?: string;
 }
 
 export type TicketFormData = {
@@ -52,6 +53,13 @@ export type TicketFormData = {
 	description: string;
 	attachments: File[];
 };
+
+export interface TicketFilterValues {
+	search: string;
+	status: TicketStatus | "";
+	priority: TicketPriority | "";
+	categoryId: string;
+}
 
 export interface TicketComment {
 	id: string;
