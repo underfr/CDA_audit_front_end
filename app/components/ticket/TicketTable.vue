@@ -46,7 +46,7 @@ defineProps<{
         <tr v-for="ticket in tickets" :key="ticket.id" class="hover:bg-base-200">
           <td class="min-w-56">
             <NuxtLink :to="`/tickets/${ticket.id}`" class="link link-hover font-semibold">{{ ticket.title }}</NuxtLink>
-            <p class="text-xs text-base-content/75">#{{ ticket.id }} · {{ ticket.categoryName }}</p>
+            <p class="text-xs text-base-content/75">{{ ticketNumber(ticket) }} · {{ ticket.categoryName }}</p>
           </td>
           <td class="whitespace-nowrap">{{ ticket.authorName }}</td>
           <td class="whitespace-nowrap">{{ ticket.assigneeName ?? 'Non assigné' }}</td>

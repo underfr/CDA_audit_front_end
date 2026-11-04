@@ -43,6 +43,7 @@ export interface Ticket {
 	firstResponseAt: Date | null;
 	closedAt: Date | null;
 	resolvedAt: Date | null;
+	number?: string;
 }
 
 export type TicketFormData = {

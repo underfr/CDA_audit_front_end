@@ -10,6 +10,7 @@ import {
 	orderByChild,
 	query,
 	update,
+	runTransaction,
 	type DatabaseReference,
 	type Query,
 	type Database
@@ -17,7 +18,7 @@ import {
 import type { Ticket, TicketStatus, UserProfile} from "~/types";
 
 /** Ce que l'appelant fournit : id et dates sont gérés par la base. */
-export type NewTicket = Omit<Ticket, "id" | "createdAt" | "updatedAt" | "firstResponseAt" | "closedAt" | "resolvedAt">;
+export type NewTicket = Omit<Ticket, "id" | "number" | "createdAt" | "updatedAt" | "firstResponseAt" | "closedAt" | "resolvedAt">;
 
 /**
  * Accès aux tickets stockés dans la Realtime Database (nœud `tickets`).
@@ -129,16 +130,19 @@ export class TicketService {
 	}
 
 	/**
-	 * Crée un ticket avec une clé générée par Firebase.
+	 * Crée un ticket avec une clé générée par Firebase et un numéro lisible (ex. « RES-0042 »).
 	 * Le statut est toujours `new` (CA-01), quelle que soit la valeur fournie.
 	 * Les dates de création et de mise à jour sont posées par le serveur.
 	 *
-	 * @param ticket - les données du ticket, sans id ni dates.
+	 * @param ticket - les données du ticket, sans id, numéro ni dates.
 	 * @returns la référence du ticket créé ; son id est dans `.key`.
 	 */
-	create(ticket: NewTicket) {
+	async create(ticket: NewTicket) {
+		// La transaction garantit deux numéros différents si deux tickets sont créés en même temps
+		const { snapshot } = await runTransaction(ref(this.db, "counters/tickets"), (current: number | null) => (current ?? 0) + 1);
 		return push(this.ticketsRef, {
 			...ticket,
+			number: `${categoryCode(ticket.categoryName)}-${String(snapshot.val()).padStart(4, "0")}`,
 			status: "new",
 			createdAt: serverTimestamp(),
 			updatedAt: serverTimestamp(),
