@@ -235,7 +235,7 @@ withDefaults(
 		categories: Category[];
 		errors?: TicketFormErrors;
 		pending?: boolean;
-		/** Erreur globale (réseau, refus de Firebase). */
+		/** Erreur globale (Réseaux, refus de Firebase). */
 		error?: string;
 	}>(),
 	{ errors: () => ({}) },
