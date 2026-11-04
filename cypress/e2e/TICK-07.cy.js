@@ -16,7 +16,7 @@ describe('Abstract Support', () => {
     })
   })
 
-  it('Un ticket résolu ne s’affiche plus dans « Mes tickets en cours »', () => {
+  it('Un ticket résolu ne s’affiche plus dans « Tickets en cours »', () => {
     // Titre unique : on est sûr de suivre CE ticket et pas un ancien
     const titre = `Écran noir au démarrage ${Date.now()}`
 
@@ -24,15 +24,17 @@ describe('Abstract Support', () => {
     seConnecter('loicklaurent28@gmail.com', 'nuqwa7-dowkun-gapguJ')
     cy.get('main a[href="/tickets/new"]').click()
     cy.get('input[name="title"]').type(titre)
-    cy.get('select[name="categoryId"]').select('Réseau')
+    cy.get('select[name="categoryId"]').select('Réseaux')
     cy.get('input[name="priority"]').check('medium')
     cy.get('textarea[name="description"]').type('Mon écran reste noir quand j’allume le poste.')
     cy.contains('button', 'Envoyer le ticket').click()
     cy.contains('button', /Confirmer l.envoi/).click()
 
-    // 2. Le ticket est bien dans « Mes tickets en cours » (statut Nouveau)
+    // 2. Le ticket est bien dans « Tickets en cours » (statut Nouveau)
+    // On attend la redirection après la création, sinon elle annule le clic suivant
+    cy.location('pathname').should('eq', '/tickets')
     cy.contains('aside a', 'Tableau de bord').click()
-    cy.contains('section', 'Mes tickets en cours').should('contain', titre)
+    cy.contains('section', 'Tickets en cours').should('contain', titre)
 
     // 3. Il l'affecte au technicien Quentin
     cy.contains('a', titre).click()
@@ -51,10 +53,10 @@ describe('Abstract Support', () => {
     cy.contains('button', 'Déconnexion').click()
 
     // 5. Le responsable revient sur son tableau de bord :
-    //    le ticket résolu n'est plus dans « Mes tickets en cours »
+    //    le ticket résolu n'est plus dans « Tickets en cours »
     seConnecter('loicklaurent28@gmail.com', 'nuqwa7-dowkun-gapguJ')
     // On attend la fin du chargement, sinon le test passerait « trop tôt »
-    cy.contains('section', 'Mes tickets en cours').should('not.contain', 'Chargement des tickets')
-    cy.contains('section', 'Mes tickets en cours').should('not.contain', titre)
+    cy.contains('section', 'Tickets en cours').should('not.contain', 'Chargement des tickets')
+    cy.contains('section', 'Tickets en cours').should('not.contain', titre)
   })
 })
