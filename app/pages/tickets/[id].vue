@@ -23,7 +23,7 @@ onUnmounted(() => { stopListening(); stopHistory(); stopComments() })
 
 useHead({ title: () => ticket.value?.title ?? 'Ticket' })
 
-const isManager = profile.value?.role === 'manager'
+const isManager = profile.value?.role === 'manager' || profile.value?.role === 'admin'
 const technicians = isManager ? useTechnicians() : ref<UserProfile[]>([])
 
 const actionPending = ref(false)
