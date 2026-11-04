@@ -74,6 +74,27 @@ export class TicketService {
 		});
 	}
 
+	/**
+	 * Écoute l'historique de tous les tickets (flux d'activité de la page Pilotage),
+	 * trié du plus récent au plus ancien.
+	 *
+	 * @param callback - reçoit toutes les entrées d'historique.
+	 * @returns une fonction à appeler (par exemple dans `onUnmounted`) pour arrêter l'écoute.
+	 */
+	watchAllHistory(callback: (entries: HistoryEntry[]) => void) {
+		return onValue(this.historyRef, (snapshot) => {
+			const entries: HistoryEntry[] = [];
+			// Le nœud `history` est rangé par ticket : history/<ticketId>/<entryId>
+			snapshot.forEach((ticketHistory) => {
+				ticketHistory.forEach((entry) => {
+					entries.push({ ...entry.val(), id: entry.key, ticketId: ticketHistory.key, createdAt: new Date(entry.val().createdAt) });
+				});
+			});
+			entries.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+			callback(entries);
+		});
+	}
+
 	private watchList(source: Query, callback: (tickets: Ticket[]) => void) {
 		return onValue(source, (snapshot) => {
 			const tickets: Ticket[] = [];

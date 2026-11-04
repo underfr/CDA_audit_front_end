@@ -15,10 +15,10 @@
       <div class="min-w-0 space-y-6 xl:col-span-2">
         <div class="grid items-start gap-6 md:grid-cols-2">
           <UiPanel title="Tickets ouverts par technicien">
-            <UiBarList :items="workloadByTechnician" :max="5" />
+            <UiBarList :items="workloadByTechnician" :max="maxOf(workloadByTechnician)" />
           </UiPanel>
           <UiPanel title="Tickets par statut">
-            <UiBarList :items="ticketsByStatus" :max="8" />
+            <UiBarList :items="ticketsByStatus" :max="maxOf(ticketsByStatus)" />
           </UiPanel>
         </div>
 
@@ -38,9 +38,56 @@
 </template>
 
 <script setup lang="ts">
-import { activityFeed, analyticsStats, ticketsByStatus, urgentTickets, workloadByTechnician } from '~/fixtures/testData'
+import { TicketService } from '~/services/firebase/ticket.service'
+import type { BarItem, HistoryEntry, Ticket } from '~/types'
 
 definePageMeta({ roles: ['manager', 'admin'] })
 useHead({ title: 'Pilotage' })
 
+const ticketService = new TicketService()
+const technicians = useTechnicians()
+
+const tickets = ref<Ticket[]>([])
+const stopTickets = ticketService.list((list) => {
+  tickets.value = list
+})
+
+const history = ref<HistoryEntry[]>([])
+const stopHistory = ticketService.watchAllHistory((entries) => {
+  history.value = entries
+})
+
+onUnmounted(() => {
+  stopTickets()
+  stopHistory()
+})
+
+const analyticsStats = computed(() => computeAnalyticsStats(tickets.value))
+const ticketsByStatus = computed(() => computeTicketsByStatus(tickets.value))
+const workloadByTechnician = computed(() => computeWorkloadByTechnician(tickets.value, technicians.value))
+
+const urgentTickets = computed(() =>
+  tickets.value
+    .filter(t => isOpen(t) && t.priority === 'urgent')
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
+)
+
+// La création d'un ticket n'est pas écrite dans `history` : on la reconstruit depuis le ticket.
+const activityFeed = computed(() => {
+  const titles = new Map(tickets.value.map(t => [t.id, t.title]))
+  const creations: HistoryEntry[] = tickets.value.map(t => ({
+    id: `created-${t.id}`,
+    ticketId: t.id,
+    type: 'created',
+    actorName: t.authorName,
+    createdAt: t.createdAt,
+  }))
+  return [...history.value, ...creations]
+    .map(entry => ({ ...entry, ticketTitle: titles.get(entry.ticketId) }))
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 10)
+})
+
+/** Valeur maximale des barres, pour que la plus longue remplisse la largeur. */
+const maxOf = (items: BarItem[]) => Math.max(1, ...items.map(item => item.value))
 </script>
