@@ -1,27 +1,10 @@
 describe('Abstract Support', () => {
-  // Petite fonction pour éviter de répéter la connexion 3 fois
-  function seConnecter(email, motDePasse) {
-    cy.get('input[name="email"]').type(email)
-    cy.get('input[name="password"]').type(motDePasse)
-    cy.contains('button', ' Se connecter').click()
-    cy.location('pathname').should('eq', '/dashboard')
-  }
-
-  beforeEach(() => {
-    cy.visit('http://localhost:3000/login', {
-      // Supprime la session Firebase avant le chargement de l'application
-      onBeforeLoad(win) {
-        win.indexedDB.deleteDatabase('firebaseLocalStorageDb')
-      },
-    })
-  })
-
   it('Un ticket résolu ne s’affiche plus dans « Tickets en cours »', () => {
     // Titre unique : on est sûr de suivre CE ticket et pas un ancien
     const titre = `Écran noir au démarrage ${Date.now()}`
 
     // 1. Le responsable support crée un ticket
-    seConnecter('loicklaurent28@gmail.com', 'nuqwa7-dowkun-gapguJ')
+    cy.login('MANAGER')
     cy.get('main a[href="/tickets/new"]').click()
     cy.get('input[name="title"]').type(titre)
     cy.get('select[name="categoryId"]').select('Réseaux')
@@ -44,7 +27,7 @@ describe('Abstract Support', () => {
     cy.contains('button', 'Déconnexion').click()
 
     // 4. Le technicien prend en charge le ticket puis le marque comme résolu
-    seConnecter('q.civel@yahoo.fr', '1234quentin!')
+    cy.login('TECHNICIAN')
     cy.get('aside a[href="/tickets"]').click()
     cy.contains('a', titre).click()
     cy.contains('button', 'Prendre en charge').click()
@@ -54,7 +37,7 @@ describe('Abstract Support', () => {
 
     // 5. Le responsable revient sur son tableau de bord :
     //    le ticket résolu n'est plus dans « Tickets en cours »
-    seConnecter('loicklaurent28@gmail.com', 'nuqwa7-dowkun-gapguJ')
+    cy.login('MANAGER')
     // On attend la fin du chargement, sinon le test passerait « trop tôt »
     cy.contains('section', 'Tickets en cours').should('not.contain', 'Chargement des tickets')
     cy.contains('section', 'Tickets en cours').should('not.contain', titre)

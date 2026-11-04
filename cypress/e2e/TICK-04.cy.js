@@ -1,15 +1,6 @@
 describe('Abstract Support', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/login', {
-      // Supprime la session Firebase avant le chargement de l'application
-      onBeforeLoad(win) {
-        win.indexedDB.deleteDatabase('firebaseLocalStorageDb')
-      },
-    })
-    cy.get('input[name="email"]').type('jean.jacque@mail.com')
-    cy.get('input[name="password"]').type('Jean@31!')
-    cy.contains('button', ' Se connecter').click()
-    cy.location('pathname').should('not.eq', '/login')
+    cy.login('COLLABORATOR')
   })
 
   it('Le ticket créé est toujours là après rechargement de la page', () => {

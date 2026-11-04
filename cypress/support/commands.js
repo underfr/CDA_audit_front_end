@@ -1,25 +1,23 @@
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+// Connexion avec un compte de test. Les identifiants viennent de cypress.env.json (local)
+// ou des secrets CYPRESS_<ROLE>_EMAIL / CYPRESS_<ROLE>_PASSWORD (GitHub Actions).
+Cypress.Commands.add('login', (role) => {
+    const emailKey = `${role}_EMAIL`
+    const passwordKey = `${role}_PASSWORD`
+
+    cy.env([emailKey, passwordKey]).then((env) => {
+        if (!env[emailKey] || !env[passwordKey]) {
+            throw new Error(`${emailKey} / ${passwordKey} manquants : ajoute-les dans cypress.env.json (ou en secrets CYPRESS_* sur GitHub).`)
+        }
+
+        cy.visit('/login', {
+            // Repart d'une session Firebase vide
+            onBeforeLoad(win) {
+                win.indexedDB.deleteDatabase('firebaseLocalStorageDb')
+            },
+        })
+        cy.get('input[name="email"]').type(env[emailKey])
+        cy.get('input[name="password"]').type(env[passwordKey], { log: false })
+        cy.contains('button', 'Se connecter').click()
+        cy.location('pathname').should('eq', '/dashboard')
+    })
+})

@@ -6,7 +6,7 @@ const route = useRoute()
 const profile = useProfile()
 const ticketService = new TicketService()
 const id = String(route.params.id)
-const transitions = computed(()=>ticket.value ? getTransitions(ticket.value, profile.value!): [])
+const transitions = computed(() => ticket.value && profile.value ? getTransitions(ticket.value, profile.value) : [])
 
 const ticket = ref<Ticket | null>(null)
 const pending = ref(true)
