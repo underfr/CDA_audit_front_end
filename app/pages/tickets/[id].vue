@@ -82,7 +82,7 @@ function onPriority(priority: TicketPriority) {
 
     <template v-else>
       <div class="space-y-3">
-        <UiPageHeader :title="ticket.title" :breadcrumbs="[{ label: 'Tickets', to: '/tickets' }, { label: `Ticket #${ticket.id}` }]" />
+        <UiPageHeader :title="ticket.title" :breadcrumbs="[{ label: 'Tickets', to: '/tickets' }, { label: `Ticket ${ticketNumber(ticket)}` }]" />
         <div class="flex flex-wrap items-center gap-2 text-sm">
           <TicketStatusBadge :status="ticket.status" />
           <TicketPriorityBadge :priority="ticket.priority" />
@@ -115,7 +115,7 @@ function onPriority(priority: TicketPriority) {
           <UiPanel title="Informations">
             <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
               <dt class="text-base-content/75">N°</dt>
-              <dd class="font-mono">#{{ ticket.id }}</dd>
+              <dd class="font-mono">{{ ticketNumber(ticket) }}</dd>
               <dt class="text-base-content/75">Catégorie</dt>
               <dd>{{ ticket.categoryName }}</dd>
               <dt class="text-base-content/75">Demandeur</dt>

@@ -12,7 +12,7 @@ export function filterTickets(tickets: Ticket[], filters: TicketFilterValues): T
     const search = filters.search.trim().replace(/^#/, '').toLowerCase()
 
     return tickets.filter((ticket) =>
-        (!search || ticket.title.toLowerCase().includes(search) || ticket.id.toLowerCase().includes(search))
+        (!search || ticket.title.toLowerCase().includes(search) || ticket.id.toLowerCase().includes(search) || (ticket.number ?? '').toLowerCase().includes(search))
         && (!filters.status || ticket.status === filters.status)
         && (!filters.priority || ticket.priority === filters.priority)
         && (!filters.categoryId || ticket.categoryId === filters.categoryId),
