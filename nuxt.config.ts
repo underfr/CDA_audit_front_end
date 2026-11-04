@@ -14,6 +14,7 @@ export default defineNuxtConfig({
     plugins: [tailwindcss() as any],
   },
   css: ['~/assets/css/main.css'],
+  nitro: { compressPublicAssets: true},
   runtimeConfig: {
     public: {
       firebase: {

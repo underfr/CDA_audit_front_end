@@ -99,7 +99,6 @@ export type IconName =
 	| "logout"
 	| "menu"
 	| "bell"
-	| "clock"
 	| "trash";
 
 export interface NavItem {

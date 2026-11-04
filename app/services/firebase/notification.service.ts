@@ -1,6 +1,6 @@
 import { onValue, ref as dbRef, set } from 'firebase/database'
 import type { Database } from 'firebase/database'
-import type { AppNotification, UserProfile } from '../../types'
+import type { AppNotification, UserProfile } from '~/types'
 
 const STATUS_LABELS: Record<string, string> = {
   new: 'Nouveau',
@@ -25,7 +25,7 @@ function priorityLabel(priority: string) {
 }
 
 // Un utilisateur a-t-il le droit de voir ce ticket ?
-function canSeeTicket(user: UserProfile, ticket: any) {
+function canSeeTicket(user: UserProfile, ticket: Ticket) {
   if (user.role === 'admin' || user.role === 'manager') {
     return true
   }

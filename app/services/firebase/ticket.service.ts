@@ -150,32 +150,6 @@ export class TicketService {
 	}
 
 	/**
-	 * Modifie uniquement les champs fournis et met à jour `updatedAt`.
-	 *
-	 * @param id - l'id du ticket à modifier.
-	 * @param changes - les champs à changer.
-	 * @returns une Promise résolue une fois l'écriture terminée.
-	 */
-	update(id: string, changes: Partial<NewTicket>) {
-		return update(child(this.ticketsRef, id), {
-			...changes,
-			updatedAt: serverTimestamp(),
-		});
-	}
-
-	/**
-	 * Supprime définitivement un ticket.
-	 * La note de cadrage ne prévoit pas de suppression : les règles de sécurité
-	 * doivent la refuser (un ticket se termine au statut `closed`).
-	 *
-	 * @param id - l'id du ticket à supprimer.
-	 * @returns une Promise résolue une fois la suppression terminée.
-	 */
-	delete(id: string) {
-		return remove(child(this.ticketsRef, id));
-	}
-
-	/**
      * Écoute un ticket en temps réel : le callback est appelé tout de suite,
      * puis à chaque modification du ticket.
      *
