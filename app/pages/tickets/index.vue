@@ -15,7 +15,6 @@ const stopListening = new TicketService().listFor(profile.value!, (list) => {
 })
 onUnmounted(stopListening)
 
-const filters = reactive<TicketFilterValues>({ search: '', status: '', priority: '', categoryId: '' })
 const filteredTickets = computed(() => filterTickets(tickets.value, filters))
 
 const categories = computed(() =>
@@ -25,6 +24,17 @@ const categories = computed(() =>
 )
 
 const stats = computed(() => computeTicketListStats(tickets.value))
+
+const route = useRoute()
+
+const filters = reactive<TicketFilterValues>({
+  search: String(route.query.search ?? ''),
+  status: '',
+  priority: '',
+  categoryId: '',
+})
+// La barre du haut peut relancer une recherche alors qu'on est déjà sur /tickets
+watch(() => route.query.search, (value) => { filters.search = String(value ?? '') })
 </script>
 
 <template>
