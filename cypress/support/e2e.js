@@ -16,3 +16,8 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 import 'cypress-real-events'
+
+// Désactive Nuxt DevTools pendant les tests
+Cypress.on('window:before:load', (win) => {
+  win.__NUXT_DEVTOOLS_DISABLE__ = true
+})
