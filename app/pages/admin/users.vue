@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import { FirebaseError } from 'firebase/app'
-import { onValue, ref as dbRef, update } from 'firebase/database'
+import { onValue, ref as dbRef, remove, update } from 'firebase/database'
 import type { Role, UserProfile } from '~/types'
+
 
 definePageMeta({ roles: ['admin'] })
 useHead({ title: 'Utilisateurs' })
+
 
 const { $db } = useNuxtApp()
 const profile = useProfile()
 const createAccount = useCreateAccount()
 
+
 const users = ref<UserProfile[]>([])
 const listPending = ref(true)
 const listError = ref('')
+
 
 const stopListening = onValue(
     dbRef($db, 'users'),
@@ -29,10 +33,12 @@ const stopListening = onValue(
 )
 onUnmounted(stopListening)
 
+
 const form = reactive({ displayName: '', email: '', role: 'collaborator' as Role })
 const creating = ref(false)
 const createError = ref('')
 const createSuccess = ref('')
+
 
 async function submit() {
   creating.value = true
@@ -51,7 +57,9 @@ async function submit() {
   }
 }
 
+
 const actionError = ref('')
+
 
 async function save(user: UserProfile, changes: Partial<Pick<UserProfile, 'role' | 'active'>>) {
   actionError.value = ''
@@ -61,7 +69,34 @@ async function save(user: UserProfile, changes: Partial<Pick<UserProfile, 'role'
     actionError.value = `La modification de ${user.displayName} a échoué.`
   }
 }
+
+const userToDelete = ref<UserProfile | null>(null)
+const deleting = ref(false)
+const deleteError = ref('')
+
+
+function askDelete(user: UserProfile) {
+  if (user.id === profile?.value?.id) return 
+  deleteError.value = ''
+  userToDelete.value = user
+}
+
+
+async function confirmDelete() {
+  const target = userToDelete.value
+  if (!target) return
+  deleting.value = true
+  try {
+    await remove(dbRef($db, `users/${target.id}`))
+    userToDelete.value = null
+  } catch {
+    deleteError.value = `La suppression de ${target.displayName} a échoué.`
+  } finally {
+    deleting.value = false
+  }
+}
 </script>
+
 
 <template>
   <div class="space-y-6">
@@ -70,6 +105,7 @@ async function save(user: UserProfile, changes: Partial<Pick<UserProfile, 'role'
         subtitle="Créez les comptes de l’équipe et gérez leurs rôles et leurs accès."
     />
 
+
     <UiPanel title="Ajouter un utilisateur">
       <form class="space-y-4" @submit.prevent="submit">
         <div v-if="createError" role="alert" class="alert alert-error">{{ createError }}</div>
@@ -77,16 +113,19 @@ async function save(user: UserProfile, changes: Partial<Pick<UserProfile, 'role'
           <p v-if="createSuccess" class="alert alert-success">{{ createSuccess }}</p>
         </div>
 
+
         <div class="grid gap-4 md:grid-cols-3">
           <div class="fieldset">
             <label for="new-name" class="fieldset-legend">Nom complet</label>
             <input id="new-name" v-model="form.displayName" name="displayName" type="text" class="input w-full" maxlength="80" autocomplete="off" required />
           </div>
 
+
           <div class="fieldset">
             <label for="new-email" class="fieldset-legend">Adresse e-mail</label>
             <input id="new-email" v-model="form.email" name="email" type="email" class="input w-full" autocomplete="off" required />
           </div>
+
 
           <div class="fieldset">
             <label for="new-role" class="fieldset-legend">Rôle</label>
@@ -96,6 +135,7 @@ async function save(user: UserProfile, changes: Partial<Pick<UserProfile, 'role'
           </div>
         </div>
 
+
         <button type="submit" class="btn btn-primary" :disabled="creating">
           <span v-if="creating" class="loading loading-spinner loading-sm" aria-hidden="true"></span>
           {{ creating ? 'Création…' : 'Créer le compte' }}
@@ -103,14 +143,18 @@ async function save(user: UserProfile, changes: Partial<Pick<UserProfile, 'role'
       </form>
     </UiPanel>
 
+
     <div v-if="actionError" role="alert" class="alert alert-error">{{ actionError }}</div>
+
 
     <p v-if="listPending" role="status" class="flex items-center gap-2">
       <span class="loading loading-spinner loading-sm" aria-hidden="true"></span>
       Chargement des utilisateurs…
     </p>
 
+
     <div v-else-if="listError" role="alert" class="alert alert-error">{{ listError }}</div>
+
 
     <div
         v-else
@@ -156,20 +200,58 @@ async function save(user: UserProfile, changes: Partial<Pick<UserProfile, 'role'
                 {{ user.active ? 'Actif' : 'Désactivé' }}
               </span>
           </td>
-          <td class="text-right">
-            <button
-                type="button"
-                class="btn btn-ghost btn-sm"
-                :disabled="user.id === profile?.id"
-                @click="save(user, { active: !user.active })"
-            >
-              {{ user.active ? 'Désactiver' : 'Réactiver' }}
-              <span class="sr-only">{{ user.displayName }}</span>
-            </button>
+          <td>
+            <div class="flex items-center justify-end gap-1">
+              <button
+                  type="button"
+                  class="btn btn-ghost btn-sm"
+                  :disabled="user.id === profile?.id"
+                  @click="save(user, { active: !user.active })"
+              >
+                {{ user.active ? 'Désactiver' : 'Réactiver' }}
+                <span class="sr-only">{{ user.displayName }}</span>
+              </button>
+
+              <button
+                  type="button"
+                  class="btn btn-square btn-ghost btn-sm"
+                  :disabled="user.id === profile?.id"
+                  :aria-label="`Supprimer le compte de ${user.displayName}`"
+                  @click="askDelete(user)"
+              >
+                <AppIcon name="trash" />
+              </button>
+            </div>
           </td>
         </tr>
         </tbody>
       </table>
     </div>
+
+    <dialog
+        v-if="userToDelete"
+        :open="true"
+        class="modal"
+        aria-labelledby="delete-title"
+    >
+      <div class="modal-box">
+        <h3 id="delete-title" class="text-lg font-bold">Supprimer cet utilisateur ?</h3>
+        <p class="mt-2 text-sm text-base-content/75">
+          Le compte de <span class="font-semibold">{{ userToDelete.displayName }}</span>
+          ({{ userToDelete.email }}) sera retiré de l'équipe. Cette action est définitive.
+        </p>
+        <div v-if="deleteError" role="alert" class="alert alert-error mt-4">{{ deleteError }}</div>
+        <div class="modal-action">
+          <button type="button" class="btn" :disabled="deleting" @click="userToDelete = null">Annuler</button>
+          <button type="button" class="btn btn-error" :disabled="deleting" @click="confirmDelete">
+            <span v-if="deleting" class="loading loading-spinner loading-sm" aria-hidden="true"></span>
+            Supprimer
+          </button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button type="button" :disabled="deleting" @click="userToDelete = null">Fermer</button>
+      </form>
+    </dialog>
   </div>
-</template>
+</template> 

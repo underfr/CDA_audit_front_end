@@ -1,31 +1,30 @@
-### [ DASH-03] [Les tickets en cours sont correctement affiché]
+### [DASH-03] [Les tickets en cours sont correctement affichés]
 
-- **Objectif :** Vérifier si les tout les ticket avec le status en cours sont bien affiché 
-- **Préparation :** Compte connecté, dépard du test page ticket-en-cours
-- **Données utilisées :** 
-Identifiant : jean.jacque@mail.com
-mot de passe : Jean@31!
-
-titre de l'incident : Mot de passe expiré, compte verrouillé
-Catégorie : Réseau
-Priorité : Urgent
-Description détaillée : Depuis ce matin, impossible de me connecter à mon poste et à ma messagerie.
-ticket (status en cours)
+- **Objectif :** Vérifier que les tickets au statut « En cours » sont bien affichés sur la page Dashboard.
+- **Préparation :** Compte non connecté, départ du test sur la page login
+- **Données utilisées :**
+    - Identifiant : jean.jacque@mail.com
+    - Mot de passe : Jean@31!
+    - Ticket :
+        - Titre : Mot de passe expiré, compte verrouillé
+        - Catégorie : Réseaux
+        - Priorité : Urgent
+        - Description : Depuis ce matin, impossible de me connecter à mon poste et à ma messagerie.
+        - Statut : En cours
 - **Actions :**
   1. Se rendre sur la page login
   2. Se connecter
-  3. Se rendre sur la page nouveau ticket
+  3. Se rendre sur la page Nouveau ticket
   4. Créer un nouveau ticket
-  5. Se rendre dans la page Dashboard
-  6. Vérifier que le ticket crée et bien affiché avec le status en cours. 
-- **Résultat attendu :** Tout les tests crée avec le status en cours doit apparaître.
+  5. Se rendre sur la page Dashboard
+  6. Vérifier que le ticket créé est bien affiché avec le statut « En cours »
+- **Résultat attendu :** Le ticket créé apparaît dans la section des tickets en cours du Dashboard, avec le statut « En cours ».
 - **Résultat obtenu :** [À compléter après le test]
-- **Statut :** non exécuté
+- **Statut :** Non exécuté
 
-Statuts du test   :
+Statuts du test :
 
 - **Réussi** : le résultat obtenu correspond au résultat attendu.
 - **Échoué** : le résultat obtenu ne correspond pas au résultat attendu.
-- **Bloqué** : un problème empêche d’effectuer la vérification.
-- **Non exécuté** : le test n’a pas été lancé.
-
+- **Bloqué** : un problème empêche d'effectuer la vérification.
+- **Non exécuté** : le test n'a pas été lancé.

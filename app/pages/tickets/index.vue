@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { categories } from '~/fixtures/testData'
 import { TicketService } from '~/services/firebase/ticket.service'
-import type { Ticket } from '~/types'
+import type { Ticket, TicketFilterValues } from '~/types'
 
 definePageMeta({ roles: ['collaborator', 'technician', 'manager', 'admin'] })
 useHead({ title: 'Tickets' })
@@ -16,7 +15,26 @@ const stopListening = new TicketService().listFor(profile.value!, (list) => {
 })
 onUnmounted(stopListening)
 
+const filteredTickets = computed(() => filterTickets(tickets.value, filters))
+
+const categories = computed(() =>
+    [...new Map(tickets.value.map((t) => [t.categoryId, t.categoryName]))]
+        .map(([id, name]) => ({ id, name }))
+        .sort((a, b) => a.name.localeCompare(b.name, 'fr')),
+)
+
 const stats = computed(() => computeTicketListStats(tickets.value))
+
+const route = useRoute()
+
+const filters = reactive<TicketFilterValues>({
+  search: String(route.query.search ?? ''),
+  status: '',
+  priority: '',
+  categoryId: '',
+})
+// La barre du haut peut relancer une recherche alors qu'on est déjà sur /tickets
+watch(() => route.query.search, (value) => { filters.search = String(value ?? '') })
 </script>
 
 <template>
@@ -39,19 +57,19 @@ const stats = computed(() => computeTicketListStats(tickets.value))
       </ul>
     </section>
 
-    <TicketFilters :categories="categories" />
+    <TicketFilters
+        v-model:search="filters.search"
+        v-model:status="filters.status"
+        v-model:priority="filters.priority"
+        v-model:categoryId="filters.categoryId"
+        :categories="categories"
+    />
 
-    <TicketTable :tickets="tickets" :pending="pending" caption="Liste des tickets" />
+    <TicketTable :tickets="filteredTickets" :pending="pending" caption="Liste des tickets" />
 
-    <nav aria-label="Pagination" class="flex flex-wrap items-center justify-between gap-4">
-      <p class="text-sm text-base-content/75">Affichage de 1 à 8 sur 24 tickets</p>
-      <div class="join">
-        <button type="button" class="join-item btn btn-sm" aria-label="Page précédente" disabled>«</button>
-        <button type="button" class="join-item btn btn-sm btn-active" aria-current="page">1</button>
-        <button type="button" class="join-item btn btn-sm">2</button>
-        <button type="button" class="join-item btn btn-sm">3</button>
-        <button type="button" class="join-item btn btn-sm" aria-label="Page suivante">»</button>
-      </div>
-    </nav>
+    <p v-if="!pending" role="status" class="text-sm text-base-content/75">
+      {{ filteredTickets.length }} ticket(s) sur {{ tickets.length }}
+    </p>
+
   </div>
 </template>

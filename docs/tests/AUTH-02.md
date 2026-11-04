@@ -1,23 +1,27 @@
-### [ AUTH-02] [Connexion avec les données invalides]
+### [AUTH-02] [Connexion avec des données invalides]
 
-- **Objectif :** Vérifier si le formulaire de connexion bloque si des informations ne sont pas correcte ou manquante.
-- **Préparation :** Compte nom connecté, dépard du test page login
-- **Données utilisées :** 
-Identifiant : jean.jacque.com
-mot de passe : Jean@31!
- 
-Identifiant : jean.jacque@mail.com
-mot de passe : unAutreMotDePasse
+- **Objectif :** Vérifier que le formulaire de connexion bloque la connexion si des informations sont incorrectes ou manquantes.
+- **Préparation :** Compte non connecté, départ du test sur la page login
+- **Données utilisées :**
+    - Identifiant invalide :
+        - Identifiant : jean.jacque.com
+        - Mot de passe : Jean@31!
+    - Mot de passe incorrect :
+        - Identifiant : jean.jacque@mail.com
+        - Mot de passe : unAutreMotDePasse
+    - Champs manquants :
+        - Identifiant vide, mot de passe vide, puis les deux vides
 - **Actions :**
   1. Se rendre sur la page login
-  2. Saisir de mauvaise informations ou des informations manquantes de connexion 
+  2. Saisir des informations de connexion incorrectes ou incomplètes
   3. Soumettre le formulaire
-- **Résultat attendu :** Un message d'erreur doit être affiché "Veuillez renseigner ce champ." ou un message d'erreur doit contenir "@".
-- **Résultat obtenu :** Les messages d'ereurs sont bien affiché et la connexion ne sais pas effectué 
-- **Statut :**  exécuté
+- **Résultat attendu :** La connexion est refusée et un message d'erreur s'affiche selon le cas :
+    - Identifiant sans « @ » : un message indiquant que l'adresse doit contenir « @ »
+    - Champ vide : « Veuillez renseigner ce champ. »
+    - Mot de passe incorrect : « Adresse e-mail ou mot de passe incorrect. »
+- **Résultat obtenu :** Les messages d'erreur attendus s'affichent dans chaque cas et la connexion n'est pas effectuée.
+- **Statut :** Réussi
 
 Statuts du test :
 
 - **Réussi** : le résultat obtenu correspond au résultat attendu.
-
-
