@@ -81,7 +81,18 @@ export type HistoryEntry = HistoryBase &
 
 // Interface
 
-export type IconName = 'dashboard' | 'ticket' | 'chart' | 'users' | 'tag' | 'plus' | 'logout' | 'menu' | 'bell' | 'clock' | 'trash'
+export type IconName =
+	| "dashboard"
+	| "ticket"
+	| "chart"
+	| "users"
+	| "tag"
+	| "plus"
+	| "logout"
+	| "menu"
+	| "bell"
+	| "clock"
+	| "trash";
 
 export interface NavItem {
 	label: string;
@@ -117,3 +128,11 @@ export type TicketFormErrors = Partial<
 		string
 	>
 >;
+
+export type AppNotification = {
+	id: number;
+	title: string;
+	message: string;
+	date: string;
+	read: boolean;
+};

@@ -27,10 +27,10 @@ defineProps<{ user: UserProfile }>()
 
     <!-- Groupe de droite : icônes + séparation + profil -->
     <div class="ml-auto flex items-center gap-3">
-      <button class="btn btn-square btn-ghost relative" aria-label="Notifications">
-        <AppIcon name="bell" />
-        <span class="absolute top-2 right-2 size-2 rounded-full bg-error"></span>
-      </button>
+      <NuxtLink to="/notifications" class="btn btn-square btn-ghost relative" aria-label="Notifications">
+  <AppIcon name="bell" />
+  <span class="absolute top-2 right-2 size-2 rounded-full bg-error"></span>
+</NuxtLink>
 
       <button class="btn btn-square btn-ghost" aria-label="Historique">
         <AppIcon name="clock" />
