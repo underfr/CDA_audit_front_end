@@ -1,28 +1,24 @@
-### [ COMM-01] [Création d'un commentire avec des données valides]
+### [COMM-01] [Création d'un commentaire avec des données valides]
 
-- **Objectif :** Vérifier si le formulaire de création de commentaire est fonctionnelle.
-- **Préparation :** Compte connecté, dépard du test page ticket
-- **Données utilisées :** 
-    Identifiant : jean.jacque@mail.com
-    mot de passe : Jean@31!
-
-    titre du ticket : Mot de passe expiré, compte verrouillé
-    Contenu du commentaire : "Je suis un commentaire "
-
+- **Objectif :** Vérifier que le formulaire de création de commentaire est fonctionnel.
+- **Préparation :** Compte non connecté, départ du test sur la page login, un ticket existant
+- **Données utilisées :**
+    - Identifiant : jean.jacque@mail.com
+    - Mot de passe : Jean@31!
+    - Titre du ticket : Mot de passe expiré, compte verrouillé
+    - Contenu du commentaire : « Je suis un commentaire »
 - **Actions :**
   1. Se connecter
-  2. Se rendre sur la page ticket
-  3. Selectionner un ticket 
-  4. CLiquer sur ajouter un commentaire
-  5. Saisir les données du commentaire dans le formulaire
+  2. Se rendre sur la page des tickets
+  3. Sélectionner un ticket
+  4. Cliquer sur « Ajouter un commentaire »
+  5. Saisir le contenu du commentaire dans le formulaire
   6. Soumettre le formulaire
-  7. Vérifier la présence du message "Votre commentaire à bien été créer."
-- **Résultat attendu :** Un message de confirmation "Votre commentaire à bien été créer."
-- **Résultat obtenu :** Le commentaire à bien été créer
-- **Statut :** exécuté
+  7. Vérifier la présence du message de confirmation
+- **Résultat attendu :** Le message « Votre commentaire à bien été créer. » s'affiche et le commentaire apparaît sur le ticket.
+- **Résultat obtenu :** Le message de confirmation s'affiche et le commentaire a bien été créé.
+- **Statut :** Réussi
 
-Statuts du test   :
+Statuts du test :
 
 - **Réussi** : le résultat obtenu correspond au résultat attendu.
-
-

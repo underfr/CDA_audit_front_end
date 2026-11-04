@@ -1,20 +1,17 @@
-### [ TICK-08] [Accès à la page sans être connecté]
+### [TICK-08] [Accès à la page sans être connecté]
 
-- **Objectif :** Vérifier si les pages sont bien protégées (Midleware)
-- **Préparation :** Compte nom connecté, dépard du test page ticket
-- **Données utilisées :** Identifiant / mot de passe
+- **Objectif :** Vérifier que la page des tickets est bien protégée par le middleware d'authentification.
+- **Préparation :** Compte non connecté, départ du test sur la page des tickets
+- **Données utilisées :** Aucune
 - **Actions :**
-  
-  1. Se rendre sur la page ticket
-  
-- **Résultat attendu :** L'utilisateur doit être redirigé vers la page login.
+  1. Se rendre sur la page des tickets sans être connecté
+- **Résultat attendu :** L'utilisateur est redirigé vers la page login.
 - **Résultat obtenu :** [À compléter après le test]
-- **Statut :** non exécuté
+- **Statut :** Non exécuté
 
 Statuts du test :
 
 - **Réussi** : le résultat obtenu correspond au résultat attendu.
 - **Échoué** : le résultat obtenu ne correspond pas au résultat attendu.
-- **Bloqué** : un problème empêche d’effectuer la vérification.
-- **Non exécuté** : le test n’a pas été lancé.
-
+- **Bloqué** : un problème empêche d'effectuer la vérification.
+- **Non exécuté** : le test n'a pas été lancé.

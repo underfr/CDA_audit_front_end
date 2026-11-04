@@ -16,7 +16,7 @@ describe('Abstract Support', () => {
   it('Créer un ticket avec des données valides',()=>{
     cy.get('main a[href="/tickets/new"]').click()
     cy.get('input[name="title"]').type('Mot de passe expiré, compte verrouillé')
-    cy.get('select[name="categoryId"]').select('Réseau')
+    cy.get('select[name="categoryId"]').select('Réseaux')
     cy.get('input[name="priority"]').check('urgent')
     cy.get('textarea[name="description"]').type('Depuis ce matin, impossible de me connecter à mon poste et à ma messagerie.')
     cy.contains('button','Envoyer le ticket').click()
