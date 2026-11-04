@@ -1,4 +1,5 @@
-import type { StatItem, Ticket } from '~/types'
+import type { BarItem, StatItem, Ticket, TicketStatus, UserProfile } from '~/types'
+import { STATUS_LABELS } from './labels'
 
 const MINUTE = 60 * 1000
 const DAY = 24 * 60 * MINUTE
@@ -53,4 +54,47 @@ export function computeDashboardStats(tickets: Ticket[], now = new Date()): Stat
             hint: average === null ? 'Aucun ticket pris en charge' : undefined,
         },
     ]
+}
+
+export function computeAnalyticsStats(tickets: Ticket[], now = new Date()): StatItem[] {
+    const todayStart = new Date(now)
+    todayStart.setHours(0, 0, 0, 0)
+    const weekAgo = now.getTime() - 7 * DAY
+
+    const open = tickets.filter(isOpen)
+    const openedToday = tickets.filter(t => t.createdAt.getTime() >= todayStart.getTime()).length
+    const unassigned = open.filter(t => t.assigneeId === null).length
+    const resolvedThisWeek = tickets.filter(t => t.resolvedAt && t.resolvedAt.getTime() >= weekAgo).length
+
+    const durations = tickets.flatMap(t => (t.resolvedAt ? [t.resolvedAt.getTime() - t.createdAt.getTime()] : []))
+    const average = durations.length ? durations.reduce((sum, d) => sum + d, 0) / durations.length : null
+
+    return [
+        { label: 'Tickets ouverts', value: open.length, hint: `${openedToday} créé(s) aujourd’hui` },
+        { label: 'Non affectés', value: unassigned, hint: unassigned > 0 ? 'À traiter en priorité' : undefined },
+        { label: 'Résolus (7 jours)', value: resolvedThisWeek },
+        {
+            label: 'Temps moyen de résolution',
+            value: average === null ? '—' : formatDuration(average),
+            hint: average === null ? 'Aucun ticket résolu' : undefined,
+        },
+    ]
+}
+
+/** Nombre de tickets pour chaque statut, dans l'ordre du cycle de vie. */
+export function computeTicketsByStatus(tickets: Ticket[]): BarItem[] {
+    return (Object.keys(STATUS_LABELS) as TicketStatus[]).map(status => ({
+        label: STATUS_LABELS[status],
+        value: tickets.filter(t => t.status === status).length,
+    }))
+}
+
+/** Nombre de tickets ouverts affectés à chaque technicien, du plus chargé au moins chargé. */
+export function computeWorkloadByTechnician(tickets: Ticket[], technicians: UserProfile[]): BarItem[] {
+    return technicians
+        .map(tech => ({
+            label: tech.displayName,
+            value: tickets.filter(t => isOpen(t) && t.assigneeId === tech.id).length,
+        }))
+        .sort((a, b) => b.value - a.value)
 }
