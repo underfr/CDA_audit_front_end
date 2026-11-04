@@ -1,21 +1,52 @@
 <script setup lang="ts">
+import { listenNotifications, listenReadState, isNotificationUnread } from '~/services/firebase/notification.service'
 import { TicketService } from '~/services/firebase/ticket.service'
-import type { Ticket, UserProfile } from '~/types'
+import type { AppNotification, Ticket, UserProfile } from '~/types'
 
 const props = defineProps<{ user: UserProfile }>()
 
+const { $db } = useNuxtApp()
+
+// Notifications
+
+const notifications = ref<AppNotification[]>([])
+const lastRead = ref(0)
+const readIds = ref<Record<string, boolean>>({})
+const readReady = ref(false)
+
+// La pastille s'affiche s'il reste au moins une notification non lue
+const hasUnread = computed(
+  () => readReady.value && notifications.value.some((n) => isNotificationUnread(n, lastRead.value, readIds.value)),
+)
+
+let stopNotifications = () => {}
+let stopReadState = () => {}
+
+onMounted(() => {
+  stopNotifications = listenNotifications($db, props.user, (list) => {
+    notifications.value = list
+  })
+
+  stopReadState = listenReadState($db, props.user.id, (last, ids) => {
+    lastRead.value = last
+    readIds.value = ids
+    readReady.value = true
+  })
+})
+
+// Recherche
+
 const tickets = ref<Ticket[]>([])
-const stopListening = new TicketService().listFor(props.user, (list) => { tickets.value = list })
-onUnmounted(stopListening)
+const stopTickets = new TicketService().listFor(props.user, (list) => { tickets.value = list })
 
 const search = ref('')
 const open = ref(false)
 const results = computed(() =>
-    search.value.trim()
-        ? filterTickets(tickets.value, { search: search.value, status: '', priority: '', categoryId: '' })
-            .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-            .slice(0, 5)
-        : [],
+  search.value.trim()
+    ? filterTickets(tickets.value, { search: search.value, status: '', priority: '', categoryId: '' })
+        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+        .slice(0, 5)
+    : [],
 )
 
 function close() {
@@ -29,11 +60,17 @@ function submit() {
   close()
 }
 
+// Ferme la liste quand le focus quitte la zone (clic ailleurs, Tab après le dernier résultat)
 function onFocusOut(event: FocusEvent) {
   if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null)) open.value = false
 }
-</script>
 
+onUnmounted(() => {
+  stopNotifications()
+  stopReadState()
+  stopTickets()
+})
+</script>
 
 <template>
   <header
@@ -43,11 +80,11 @@ function onFocusOut(event: FocusEvent) {
     </label>
 
     <form
-        role="search"
-        class="relative hidden min-w-0 flex-1 md:block md:max-w-md"
-        @submit.prevent="submit"
-        @focusout="onFocusOut"
-        @keydown.esc="open = false"
+      role="search"
+      class="relative hidden min-w-0 flex-1 md:block md:max-w-md"
+      @submit.prevent="submit"
+      @focusout="onFocusOut"
+      @keydown.esc="open = false"
     >
       <label class="input h-8 w-full">
         <svg class="h-[1em] opacity-50" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -57,29 +94,29 @@ function onFocusOut(event: FocusEvent) {
           </g>
         </svg>
         <input
-            v-model="search"
-            type="search"
-            autocomplete="off"
-            aria-label="Rechercher un ticket"
-            aria-controls="search-results"
-            placeholder="Rechercher un ticket (titre ou n°)"
-            @focus="open = true"
-            @input="open = true"
+          v-model="search"
+          type="search"
+          autocomplete="off"
+          aria-label="Rechercher un ticket"
+          aria-controls="search-results"
+          placeholder="Rechercher un ticket (titre ou n°)"
+          @focus="open = true"
+          @input="open = true"
         />
       </label>
 
       <div
-          v-if="open && search.trim()"
-          id="search-results"
-          class="absolute inset-x-0 top-full z-20 mt-1 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
+        v-if="open && search.trim()"
+        id="search-results"
+        class="absolute inset-x-0 top-full z-20 mt-1 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
       >
         <ul v-if="results.length">
           <li v-for="ticket in results" :key="ticket.id">
             <NuxtLink
-                :to="`/tickets/${ticket.id}`"
-                class="flex flex-col rounded-field px-3 py-2 hover:bg-base-200 focus:bg-base-200"
-                @mousedown.prevent
-                @click="close"
+              :to="`/tickets/${ticket.id}`"
+              class="flex flex-col rounded-field px-3 py-2 hover:bg-base-200 focus:bg-base-200"
+              @mousedown.prevent
+              @click="close"
             >
               <span class="truncate text-sm font-medium">{{ ticket.title }}</span>
               <span class="text-xs text-base-content/75">{{ ticketNumber(ticket) }} · {{ STATUS_LABELS[ticket.status] }}</span>
@@ -93,20 +130,18 @@ function onFocusOut(event: FocusEvent) {
       <p role="status" class="sr-only">{{ open && search.trim() ? `${results.length} résultat(s)` : '' }}</p>
     </form>
 
-    <!-- Groupe de droite : icônes + séparation + profil -->
+    <!-- Groupe de droite : notifications + séparation + profil -->
     <div class="ml-auto flex items-center gap-3">
-      <NuxtLink to="/notifications" class="btn btn-square btn-ghost relative" aria-label="Notifications">
-  <AppIcon name="bell" />
-  <span class="absolute top-2 right-2 size-2 rounded-full bg-error"></span>
-</NuxtLink>
-
-      <button class="btn btn-square btn-ghost" aria-label="Historique">
-        <AppIcon name="clock" />
-      </button>
-
+      <NuxtLink
+        to="/notifications"
+        class="btn btn-square btn-ghost relative"
+        :aria-label="hasUnread ? 'Notifications, de nouvelles notifications sont non lues' : 'Notifications'"
+      >
+        <AppIcon name="bell" />
+        <span v-if="hasUnread" class="absolute top-2 right-2 size-2 rounded-full bg-error"></span>
+      </NuxtLink>
 
       <div class="h-8 w-px bg-base-content/20"></div>
-
 
       <div class="text-right leading-tight">
         <p class="text-sm font-semibold">{{ user.displayName }}</p>
