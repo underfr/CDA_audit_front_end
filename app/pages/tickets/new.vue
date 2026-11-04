@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { activeCategories } from '~/fixtures/testData'
+import { CategoryService } from '~/services/firebase/category.service'
 import { TicketService } from '~/services/firebase/ticket.service'
 
 
@@ -36,17 +36,24 @@ useHead({ title: 'Nouveau ticket' })
 
 const pending = ref(false)
 const error = ref("")
-const profile= useProfile()
-const ticketService = new TicketService
+const profile = useProfile()
+const ticketService = new TicketService()
+const categoryService = new CategoryService()
+const activeCategories = ref<Category[]>([])
+const stopListening = categoryService.listActive((list) => {
+	activeCategories.value = list
+})
 
-async function onSubmit(data:TicketFormData){
-	const {attachments , ...fields }= data
-	const category = activeCategories.find((c) => c.id === fields.categoryId)
+onUnmounted(stopListening)
+
+async function onSubmit(data: TicketFormData) {
+	const { attachments, ...fields } = data
+	const category = activeCategories.value.find((c) => c.id === fields.categoryId)
 
 	pending.value = true
 	error.value = ""
 
-	try{
+	try {
 		await ticketService.create({
 			...fields,
 			categoryName: category?.name ?? "",
@@ -57,9 +64,9 @@ async function onSubmit(data:TicketFormData){
 			assigneeName: null,
 		})
 		await navigateTo("/tickets")
-	}catch(e){
-		error.value = "Le ticket n'a pas pu être crée. Réessayez"
-	}finally{
+	} catch {
+		error.value = "Le ticket n'a pas pu être créé. Réessayez."
+	} finally {
 		pending.value = false
 	}
 	
