@@ -130,9 +130,9 @@ export type TicketFormErrors = Partial<
 >;
 
 export type AppNotification = {
-	id: number;
-	title: string;
-	message: string;
-	date: string;
-	read: boolean;
-};
+  id: string
+  ticketId: string
+  title: string
+  message: string
+  createdAt: number
+}

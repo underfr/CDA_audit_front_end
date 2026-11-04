@@ -1,10 +1,41 @@
 <script setup lang="ts">
-import type { UserProfile } from '~/types'
+import { listenNotifications, listenReadState, isNotificationUnread } from '../../services/firebase/notification.service'
+import type { AppNotification, UserProfile } from '../../types'
 
+const props = defineProps<{ user: UserProfile }>()
 
-defineProps<{ user: UserProfile }>()
+const { $db } = useNuxtApp()
+
+const notifications = ref<AppNotification[]>([])
+const lastRead = ref(0)
+const readIds = ref<Record<string, boolean>>({})
+const readReady = ref(false)
+
+// La pastille s'affiche s'il reste au moins une notification non lue
+const hasUnread = computed(
+  () => readReady.value && notifications.value.some((n) => isNotificationUnread(n, lastRead.value, readIds.value)),
+)
+
+let stopNotifications = () => {}
+let stopReadState = () => {}
+
+onMounted(() => {
+  stopNotifications = listenNotifications($db, props.user, (list) => {
+    notifications.value = list
+  })
+
+  stopReadState = listenReadState($db, props.user.id, (last, ids) => {
+    lastRead.value = last
+    readIds.value = ids
+    readReady.value = true
+  })
+})
+
+onUnmounted(() => {
+  stopNotifications()
+  stopReadState()
+})
 </script>
-
 
 <template>
   <header
@@ -19,26 +50,22 @@ defineProps<{ user: UserProfile }>()
       <input type="search" required placeholder="Rechercher un ticket, un utilisateur..." />
     </label>
 
-
     <label for="app-drawer" class="btn btn-square btn-ghost lg:hidden" aria-label="Ouvrir le menu">
       <AppIcon name="menu" />
     </label>
 
-
-    <!-- Groupe de droite : icônes + séparation + profil -->
+    <!-- Groupe de droite : notifications + séparation + profil -->
     <div class="ml-auto flex items-center gap-3">
-      <NuxtLink to="/notifications" class="btn btn-square btn-ghost relative" aria-label="Notifications">
-  <AppIcon name="bell" />
-  <span class="absolute top-2 right-2 size-2 rounded-full bg-error"></span>
-</NuxtLink>
-
-      <button class="btn btn-square btn-ghost" aria-label="Historique">
-        <AppIcon name="clock" />
-      </button>
-
+      <NuxtLink
+        to="/notifications"
+        class="btn btn-square btn-ghost relative"
+        :aria-label="hasUnread ? 'Notifications, de nouvelles notifications sont non lues' : 'Notifications'"
+      >
+        <AppIcon name="bell" />
+        <span v-if="hasUnread" class="absolute top-2 right-2 size-2 rounded-full bg-error"></span>
+      </NuxtLink>
 
       <div class="h-8 w-px bg-base-content/20"></div>
-
 
       <div class="text-right leading-tight">
         <p class="text-sm font-semibold">{{ user.displayName }}</p>
