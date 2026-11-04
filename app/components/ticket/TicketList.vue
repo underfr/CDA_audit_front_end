@@ -30,7 +30,7 @@ defineProps<{
           <p class="font-semibold break-words">{{ ticket.title }}</p>
           <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-base-content/75">
             <TicketPriorityBadge :priority="ticket.priority" />
-            <span>#{{ ticket.id }}</span>
+            <span>{{ ticketNumber(ticket) }}</span>
             <span>Mis à jour le <NuxtTime :datetime="ticket.updatedAt" locale="fr-FR" date-style="short" time-style="short" /></span>
           </p>
         </div>

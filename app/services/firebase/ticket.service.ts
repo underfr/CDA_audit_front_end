@@ -10,6 +10,7 @@ import {
 	orderByChild,
 	query,
 	update,
+	runTransaction,
 	type DatabaseReference,
 	type Query,
 	type Database
@@ -17,7 +18,7 @@ import {
 import type { Ticket, TicketStatus, UserProfile} from "~/types";
 
 /** Ce que l'appelant fournit : id et dates sont gérés par la base. */
-export type NewTicket = Omit<Ticket, "id" | "createdAt" | "updatedAt" | "firstResponseAt" | "closedAt" | "resolvedAt">;
+export type NewTicket = Omit<Ticket, "id" | "number" | "createdAt" | "updatedAt" | "firstResponseAt" | "closedAt" | "resolvedAt">;
 
 /**
  * Accès aux tickets stockés dans la Realtime Database (nœud `tickets`).
@@ -74,6 +75,27 @@ export class TicketService {
 		});
 	}
 
+	/**
+	 * Écoute l'historique de tous les tickets (flux d'activité de la page Pilotage),
+	 * trié du plus récent au plus ancien.
+	 *
+	 * @param callback - reçoit toutes les entrées d'historique.
+	 * @returns une fonction à appeler (par exemple dans `onUnmounted`) pour arrêter l'écoute.
+	 */
+	watchAllHistory(callback: (entries: HistoryEntry[]) => void) {
+		return onValue(this.historyRef, (snapshot) => {
+			const entries: HistoryEntry[] = [];
+			// Le nœud `history` est rangé par ticket : history/<ticketId>/<entryId>
+			snapshot.forEach((ticketHistory) => {
+				ticketHistory.forEach((entry) => {
+					entries.push({ ...entry.val(), id: entry.key, ticketId: ticketHistory.key, createdAt: new Date(entry.val().createdAt) });
+				});
+			});
+			entries.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+			callback(entries);
+		});
+	}
+
 	private watchList(source: Query, callback: (tickets: Ticket[]) => void) {
 		return onValue(source, (snapshot) => {
 			const tickets: Ticket[] = [];
@@ -108,16 +130,19 @@ export class TicketService {
 	}
 
 	/**
-	 * Crée un ticket avec une clé générée par Firebase.
+	 * Crée un ticket avec une clé générée par Firebase et un numéro lisible (ex. « RES-0042 »).
 	 * Le statut est toujours `new` (CA-01), quelle que soit la valeur fournie.
 	 * Les dates de création et de mise à jour sont posées par le serveur.
 	 *
-	 * @param ticket - les données du ticket, sans id ni dates.
+	 * @param ticket - les données du ticket, sans id, numéro ni dates.
 	 * @returns la référence du ticket créé ; son id est dans `.key`.
 	 */
-	create(ticket: NewTicket) {
+	async create(ticket: NewTicket) {
+		// La transaction garantit deux numéros différents si deux tickets sont créés en même temps
+		const { snapshot } = await runTransaction(ref(this.db, "counters/tickets"), (current: number | null) => (current ?? 0) + 1);
 		return push(this.ticketsRef, {
 			...ticket,
+			number: `${categoryCode(ticket.categoryName)}-${String(snapshot.val()).padStart(4, "0")}`,
 			status: "new",
 			createdAt: serverTimestamp(),
 			updatedAt: serverTimestamp(),
@@ -178,7 +203,7 @@ export class TicketService {
 	}
 
 	listFor(user: UserProfile, callback: (tickets: Ticket[])=>void){
-		if (user.role === "manager") return this.list(callback)
+		if (user.role === "manager" || user.role === "admin") return this.list(callback)
 		const field = user.role === "technician" ? "assigneeId" : "authorId"
 		return this.watchList(query(this.ticketsRef, orderByChild(field), equalTo(user.id)), callback)
 	}
@@ -203,10 +228,6 @@ export class TicketService {
 			{ type: "status", from: ticket.status, to: status },
 			actor,
 		);
-	}
-
-	listByAuthor(authorId: string, callback: (tickets: Ticket[]) => void){
-		return this.watchList(query(this.ticketsRef, orderByChild("authorId"), equalTo(authorId)), callback)
 	}
 
 	/**
