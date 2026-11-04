@@ -5,48 +5,87 @@ import type { Category } from '~/types'
 definePageMeta({ roles: ['admin'] })
 useHead({ title: 'Catégories' })
 
-const categoryService = new CategoryService()
+const service = new CategoryService()
 
 const categories = ref<Category[]>([])
-const stopListening = categoryService.list((list) => {
-  categories.value = list.sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+let stopListening: (() => void) | null = null
+
+onMounted(() => {
+  stopListening = service.list((list) => {
+    categories.value = list.sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  })
 })
-onUnmounted(stopListening)
 
+onUnmounted(() => {
+  if (stopListening) stopListening()
+})
+
+// Ajout
 const newName = ref('')
-const errorMessage = ref('')
+const creating = ref(false)
+const createError = ref('')
 
-async function addCategory() {
-  errorMessage.value = ''
+async function submit() {
+  createError.value = ''
+
+  const name = newName.value.trim()
+  if (!name) return
+
+  // On vérifie que le nom n'existe pas déjà (sans tenir compte des majuscules)
+  const exists = categories.value.some((c) => c.name.toLowerCase() === name.toLowerCase())
+  if (exists) {
+    createError.value = 'Cette catégorie existe déjà.'
+    return
+  }
+
+  creating.value = true
   try {
-    await categoryService.create({ name: newName.value.trim(), active: true })
+    await service.create({ name, active: true })
     newName.value = ''
   } catch {
-    errorMessage.value = 'L’ajout de la catégorie a échoué.'
+    createError.value = 'La création de la catégorie a échoué. Réessayez.'
+  } finally {
+    creating.value = false
   }
 }
+
+// Activation / désactivation
+const toggleError = ref('')
 
 async function toggleActive(category: Category) {
-  errorMessage.value = ''
+  toggleError.value = ''
   try {
-    await categoryService.setActive(category.id, !category.active)
+    await service.setActive(category.id, !category.active)
   } catch {
-    errorMessage.value = `La modification de « ${category.name} » a échoué.`
+    toggleError.value = `La modification de « ${category.name} » a échoué.`
   }
 }
 
-async function deleteCategory(category: Category) {
-  if (!confirm(`Supprimer définitivement « ${category.name} » ?`)) return
-  errorMessage.value = ''
+// Suppression
+const categoryToDelete = ref<Category | null>(null)
+const deleting = ref(false)
+const deleteError = ref('')
+
+function askDelete(category: Category) {
+  deleteError.value = ''
+  categoryToDelete.value = category
+}
+
+async function confirmDelete() {
+  const target = categoryToDelete.value
+  if (!target) return
+  deleting.value = true
   try {
-    await categoryService.delete(category.id)
+    await service.delete(target.id)
+    categoryToDelete.value = null
   } catch (e) {
-    // delete() lève une erreur avec un message clair si des tickets utilisent la catégorie.
-    errorMessage.value = e instanceof Error ? e.message : 'La suppression a échoué.'
+    // Le service refuse la suppression si des tickets utilisent la catégorie
+    deleteError.value = e instanceof Error ? e.message : `La suppression de « ${target.name} » a échoué.`
+  } finally {
+    deleting.value = false
   }
 }
 </script>
-
 
 <template>
   <div class="space-y-6">
@@ -55,19 +94,32 @@ async function deleteCategory(category: Category) {
       subtitle="Une catégorie désactivée n’est plus proposée à la création d’un ticket."
     />
 
-    <div v-if="errorMessage" role="alert" class="alert alert-error">{{ errorMessage }}</div>
-
     <div class="grid items-start gap-6 lg:grid-cols-3">
       <UiPanel title="Ajouter une catégorie">
-        <form class="space-y-2" @submit.prevent="addCategory">
+        <form class="space-y-2" @submit.prevent="submit">
           <label for="category-name" class="block text-sm font-semibold">Nom de la catégorie</label>
-          <input id="category-name" name="name" v-model="newName" type="text" class="input w-full" maxlength="50" required />
-          <button type="submit" class="btn btn-primary w-full">Ajouter</button>
+          <input
+            id="category-name"
+            v-model="newName"
+            name="name"
+            type="text"
+            class="input w-full"
+            maxlength="50"
+            required
+          />
+
+          <div v-if="createError" role="alert" class="alert alert-error">{{ createError }}</div>
+
+          <button type="submit" class="btn btn-primary w-full" :disabled="creating">
+            <span v-if="creating" class="loading loading-spinner loading-sm" aria-hidden="true"></span>
+            Ajouter
+          </button>
         </form>
       </UiPanel>
 
-
       <UiPanel title="Catégories existantes" class="lg:col-span-2">
+        <div v-if="toggleError" role="alert" class="alert alert-error mb-2">{{ toggleError }}</div>
+
         <ul class="divide-y divide-base-300">
           <li
             v-for="category in categories"
@@ -93,7 +145,7 @@ async function deleteCategory(category: Category) {
                 type="button"
                 class="btn btn-square btn-ghost btn-sm"
                 :aria-label="`Supprimer la catégorie ${category.name}`"
-                @click="deleteCategory(category)"
+                @click="askDelete(category)"
               >
                 <AppIcon name="trash" />
               </button>
@@ -102,5 +154,31 @@ async function deleteCategory(category: Category) {
         </ul>
       </UiPanel>
     </div>
+
+    <dialog
+      v-if="categoryToDelete"
+      :open="true"
+      class="modal"
+      aria-labelledby="delete-title"
+    >
+      <div class="modal-box">
+        <h3 id="delete-title" class="text-lg font-bold">Supprimer cette catégorie ?</h3>
+        <p class="mt-2 text-sm text-base-content/75">
+          La catégorie <span class="font-semibold">{{ categoryToDelete.name }}</span>
+          sera supprimée. Cette action est définitive.
+        </p>
+        <div v-if="deleteError" role="alert" class="alert alert-error mt-4">{{ deleteError }}</div>
+        <div class="modal-action">
+          <button type="button" class="btn" :disabled="deleting" @click="categoryToDelete = null">Annuler</button>
+          <button type="button" class="btn btn-error" :disabled="deleting" @click="confirmDelete">
+            <span v-if="deleting" class="loading loading-spinner loading-sm" aria-hidden="true"></span>
+            Supprimer
+          </button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button type="button" :disabled="deleting" @click="categoryToDelete = null">Fermer</button>
+      </form>
+    </dialog>
   </div>
 </template>
