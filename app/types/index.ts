@@ -53,6 +53,13 @@ export type TicketFormData = {
 	attachments: File[];
 };
 
+export interface TicketFilterValues {
+	search: string;
+	status: TicketStatus | "";
+	priority: TicketPriority | "";
+	categoryId: string;
+}
+
 export interface TicketComment {
 	id: string;
 	ticketId: string;

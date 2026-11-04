@@ -1,4 +1,4 @@
-import type { StatItem, Ticket } from '~/types'
+import type { Role, StatItem, Ticket } from '~/types'
 
 const MINUTE = 60 * 1000
 const DAY = 24 * 60 * MINUTE
@@ -31,7 +31,7 @@ export function formatDuration(ms: number) {
     return `${Math.floor(hours / 24)} j ${hours % 24} h`
 }
 
-export function computeDashboardStats(tickets: Ticket[], now = new Date()): StatItem[] {
+export function computeDashboardStats(tickets: Ticket[], role: Role, now = new Date()): StatItem[] {
     const weekStart = startOfWeek(now).getTime()
     const monthAgo = now.getTime() - 30 * DAY
 
@@ -45,7 +45,11 @@ export function computeDashboardStats(tickets: Ticket[], now = new Date()): Stat
 
     return [
         { label: 'Tickets ouverts', value: open, hint: `+${openedThisWeek} cette semaine` },
-        { label: 'Résolus à confirmer', value: toConfirm, hint: toConfirm > 0 ? 'Action requise' : undefined },
+        {
+            label: 'Résolus à confirmer',
+            value: toConfirm,
+            hint: toConfirm > 0 ? (role === 'collaborator' ? 'Action requise' : 'En attente du demandeur') : undefined,
+        },
         { label: 'Clôturés (30 jours)', value: closedRecently },
         {
             label: 'Temps de réponse moyen',
