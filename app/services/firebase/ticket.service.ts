@@ -11,9 +11,10 @@ import {
 	query,
 	update,
 	type DatabaseReference,
-	type Query
+	type Query,
+	type Database
 } from "firebase/database";
-import type { Ticket, TicketStatus, UserProfile } from "~/types";
+import type { Ticket, TicketStatus, UserProfile} from "~/types";
 
 /** Ce que l'appelant fournit : id et dates sont gérés par la base. */
 export type NewTicket = Omit<Ticket, "id" | "createdAt" | "updatedAt" | "firstResponseAt" | "closedAt" | "resolvedAt">;
@@ -25,12 +26,52 @@ export type NewTicket = Omit<Ticket, "id" | "createdAt" | "updatedAt" | "firstRe
  * car le constructeur appelle `useNuxtApp()`.
  */
 export class TicketService {
+	private db: Database;
 	private ticketsRef: DatabaseReference;
+	private historyRef: DatabaseReference;
+	private commentsRef: DatabaseReference;
 
 	/** Récupère la base fournie par le plugin Firebase et pointe sur le nœud `tickets`. */
 	constructor() {
 		const { $db } = useNuxtApp();
+		this.db = $db
 		this.ticketsRef = ref($db, "tickets");
+		this.historyRef = ref($db, "history")
+		this.commentsRef = ref($db, "comments")
+	}
+
+	private updateWithHistory(ticketId: string, changes: Record<string, unknown>, entry: Record<string, unknown>, actor: UserProfile) {
+		const entryId = push(child(this.historyRef, ticketId)).key;
+		const updates: Record<string, unknown> = {
+			[`tickets/${ticketId}/updatedAt`]: serverTimestamp(),
+			[`history/${ticketId}/${entryId}`]: { ...entry, actorId: actor.id, actorName: actor.displayName, createdAt: serverTimestamp() },
+		};
+		for (const [field, value] of Object.entries(changes)) updates[`tickets/${ticketId}/${field}`] = value;
+		return update(ref(this.db), updates);
+	}
+
+	assign(ticket: Ticket, technician: UserProfile, actor: UserProfile) {
+		return this.updateWithHistory(
+			ticket.id,
+			{ assigneeId: technician.id, assigneeName: technician.displayName },
+			{ type: "assignment", from: ticket.assigneeName, to: technician.displayName },
+			actor,
+		);
+	}
+
+	updatePriority(ticket: Ticket, priority: TicketPriority, actor: UserProfile) {
+		return this.updateWithHistory(ticket.id, { priority }, { type: "priority", from: ticket.priority, to: priority }, actor);
+	}
+
+	watchHistory(ticketId: string, callback: (entries: HistoryEntry[]) => void) {
+		return onValue(child(this.historyRef, ticketId), (snapshot) => {
+			const entries: HistoryEntry[] = [];
+			// Les clés push sont chronologiques : unshift place la plus récente en tête
+			snapshot.forEach((entry) => {
+				entries.unshift({ ...entry.val(), id: entry.key, ticketId, createdAt: new Date(entry.val().createdAt) });
+			});
+			callback(entries);
+		});
 	}
 
 	private watchList(source: Query, callback: (tickets: Ticket[]) => void) {
@@ -110,17 +151,19 @@ export class TicketService {
 	}
 
 	/**
-	 * Écoute un ticket en temps réel : le callback est appelé tout de suite,
-	 * puis à chaque modification du ticket.
-	 *
-	 * @param id - l'id du ticket à écouter.
-	 * @param callback - reçoit le ticket, ou `null` s'il n'existe pas.
-	 * @returns une fonction à appeler (par exemple dans `onUnmounted`) pour arrêter l'écoute.
-	 */
-	watchById(id: string, callback: (ticket: Ticket | null) => void) {
+     * Écoute un ticket en temps réel : le callback est appelé tout de suite,
+     * puis à chaque modification du ticket.
+     *
+     * @param id - l'id du ticket à écouter.
+     * @param callback - reçoit le ticket, ou `null` s'il n'existe pas.
+     * @param onError
+     * @returns une fonction à appeler (par exemple dans `onUnmounted`) pour arrêter l'écoute.
+     */
+
+	watchById(id: string, callback: (ticket: Ticket | null) => void, onError?: (error: Error) => void) {
 		return onValue(child(this.ticketsRef, id), (snapshot) => {
 			callback(snapshot.exists() ? this.toTicket(snapshot) : null);
-		});
+		}, onError);
 	}
 
 	/**
@@ -141,27 +184,64 @@ export class TicketService {
 	}
 
 	/**
-     * Change le statut d'un ticket et met à jour `updatedAt`.
-     * Les transitions autorisées (§4.1 du cadrage) doivent être vérifiées
-     * par les règles de sécurité.
-     *
-     * @param id - l'id du ticket à modifier.
-     * @param from
-     * @param status - le nouveau statut.
-     * @returns une Promise résolue une fois l'écriture terminée.
-     */
-	updateStatus(id: string, from: TicketStatus, status: TicketStatus) {
-		return update(child(this.ticketsRef, id), {
-			status,
-			updatedAt: serverTimestamp(),
-			...(from === "new" && status === "in_progress" ? { firstResponseAt: serverTimestamp() } : {}),
-			...(status === "closed" ? { closedAt: serverTimestamp() } : {}),
-			...(status === "resolved" ? { resolvedAt: serverTimestamp() } : {})
-		});
+	 * Change le statut, pose les dates de suivi et trace le changement.
+	 *
+	 * @param ticket - le ticket à modifier.
+	 * @param status - le nouveau statut.
+	 * @param actor - l'utilisateur qui fait l'action.
+	 * @returns une Promise résolue une fois l'écriture terminée.
+	 */
+	updateStatus(ticket: Ticket, status: TicketStatus, actor: UserProfile) {
+		return this.updateWithHistory(
+			ticket.id,
+			{
+				status,
+				...(ticket.status === "new" && status === "in_progress" ? { firstResponseAt: serverTimestamp() } : {}),
+				...(status === "resolved" ? { resolvedAt: serverTimestamp() } : {}),
+				...(status === "closed" ? { closedAt: serverTimestamp() } : {}),
+			},
+			{ type: "status", from: ticket.status, to: status },
+			actor,
+		);
 	}
 
 	listByAuthor(authorId: string, callback: (tickets: Ticket[]) => void){
 		return this.watchList(query(this.ticketsRef, orderByChild("authorId"), equalTo(authorId)), callback)
+	}
+
+	/**
+	 * Écoute les commentaires d'un ticket, du plus ancien au plus récent.
+	 *
+	 * @param ticketId - l'id du ticket.
+	 * @param callback - reçoit la liste des commentaires.
+	 * @returns une fonction à appeler pour arrêter l'écoute.
+	 */
+	watchComments(ticketId: string, callback: (comments: TicketComment[]) => void) {
+		return onValue(child(this.commentsRef, ticketId), (snapshot) => {
+			const comments: TicketComment[] = [];
+			// Les clés push sont chronologiques : l'ordre de lecture est l'ordre d'écriture
+			snapshot.forEach((comment) => {
+				comments.push({ ...comment.val(), id: comment.key, ticketId, createdAt: new Date(comment.val().createdAt) });
+			});
+			callback(comments);
+		});
+	}
+
+	/**
+	 * Publie un commentaire sur un ticket.
+	 *
+	 * @param ticketId - l'id du ticket.
+	 * @param body - le texte du commentaire, déjà nettoyé.
+	 * @param author - l'utilisateur connecté.
+	 * @returns la référence du commentaire créé.
+	 */
+	addComment(ticketId: string, body: string, author: UserProfile) {
+		return push(child(this.commentsRef, ticketId), {
+			authorId: author.id,
+			authorName: author.displayName,
+			body,
+			createdAt: serverTimestamp(),
+		});
 	}
 
 }

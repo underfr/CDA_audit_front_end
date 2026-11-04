@@ -3,7 +3,7 @@ import { categories } from '~/fixtures/testData'
 import { TicketService } from '~/services/firebase/ticket.service'
 import type { Ticket } from '~/types'
 
-definePageMeta({ roles: ['collaborator', 'technician', 'manager'] })
+definePageMeta({ roles: ['collaborator', 'technician', 'manager', 'admin'] })
 useHead({ title: 'Tickets' })
 
 const profile = useProfile()

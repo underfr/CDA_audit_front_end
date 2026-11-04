@@ -1,9 +1,3 @@
-<script setup lang="ts">
-import { activityFeed, analyticsStats, ticketsByStatus, urgentTickets, workloadByTechnician } from '~/fixtures/testData'
-definePageMeta({ roles: ['manager'] })
-useHead({ title: 'Pilotage' })
-</script>
-
 <template>
   <div class="space-y-6">
     <UiPageHeader title="Pilotage du support" subtitle="Activité et charge de l’équipe support." />
@@ -42,3 +36,11 @@ useHead({ title: 'Pilotage' })
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { activityFeed, analyticsStats, ticketsByStatus, urgentTickets, workloadByTechnician } from '~/fixtures/testData'
+
+definePageMeta({ roles: ['manager', 'admin'] })
+useHead({ title: 'Pilotage' })
+
+</script>
