@@ -1,20 +1,18 @@
-### [ AUTH-01] [Connexion avec les données valides]
+### [AUTH-01] [Connexion avec des données valides]
 
-- **Objectif :** Vérifier si le formulaire de connexion est fonctionnelle
-- **Préparation :** Compte nom connecté, dépard du test page login
-- **Données utilisées :** 
-Identifiant : jean.jacque@mail.com
-mot de passe : Jean@31!
+- **Objectif :** Vérifier que le formulaire de connexion est fonctionnel
+- **Préparation :** Compte non connecté, départ du test sur la page login
+- **Données utilisées :**
+    - Identifiant : jean.jacque@mail.com
+    - Mot de passe : Jean@31!
 - **Actions :**
   1. Se rendre sur la page login
   2. Saisir les informations du compte
   3. Soumettre le formulaire
-- **Résultat attendu :** L'utilisateur doit être connecté et être basculé sur la page Dashboard.
-- **Résultat obtenu :** L'utilisateur est bien connecté et redirigé vers la page Dashboard
-- **Statut :** exécuté
+- **Résultat attendu :** L'utilisateur est connecté et redirigé vers la page Dashboard.
+- **Résultat obtenu :** L'utilisateur est bien connecté et redirigé vers la page Dashboard.
+- **Statut :** Réussi
 
-Statuts du test   :
+Statuts du test :
 
 - **Réussi** : le résultat obtenu correspond au résultat attendu.
-
-

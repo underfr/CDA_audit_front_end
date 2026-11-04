@@ -15,7 +15,7 @@ describe('Abstract Support', () => {
         // Créer un nouveau ticket
         cy.get('main a[href="/tickets/new"]').click()
         cy.get('input[name="title"]').type('test vissibilité des ticket assigner au technicien')
-        cy.get('select[name="categoryId"]').select('Réseau')
+        cy.get('select[name="categoryId"]').select('Réseaux')
         cy.get('input[name="priority"]').check('urgent')
         cy.get('textarea[name="description"]').type("Test si un technicien à acces aux tickets qui lui sont assignés.")
         cy.contains('button','Envoyer le ticket').click()

@@ -45,7 +45,7 @@ export const navigation: NavItem[] = [
 export const categories: Category[] = [
   { id: 'hardware', name: 'Matériel', active: true },
   { id: 'software', name: 'Logiciel', active: true },
-  { id: 'network', name: 'Réseau', active: true },
+  { id: 'network', name: 'Réseaux', active: true },
   { id: 'accounts', name: 'Accès et comptes', active: true },
   { id: 'email', name: 'Messagerie', active: true },
   { id: 'phone', name: 'Téléphonie', active: false },
@@ -61,7 +61,7 @@ const vpn: Ticket = {
   title: 'Accès VPN bloqué depuis le télétravail',
   description: 'Depuis ce matin, le client VPN affiche « authentification refusée ».\nLe problème apparaît sur le Wi-Fi de la maison comme en partage de connexion. Poste concerné : PC-LYON-0412.',
   categoryId: 'network',
-  categoryName: 'Réseau',
+  categoryName: 'Réseaux',
   priority: 'urgent',
   status: 'in_progress',
   authorId: marc.id,
@@ -123,7 +123,7 @@ const printer: Ticket = {
 const fileServer: Ticket = {
   id: 'e3h8n2',
   title: 'Panne du serveur de fichiers partagés',
-  description: 'Le lecteur réseau P: est inaccessible pour tout le service comptabilité.',
+  description: 'Le lecteur Réseaux P: est inaccessible pour tout le service comptabilité.',
   categoryId: 'hardware',
   categoryName: 'Matériel',
   priority: 'urgent',
