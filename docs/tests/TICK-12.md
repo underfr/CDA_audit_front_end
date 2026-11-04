@@ -10,7 +10,7 @@
         - Identifiant : loicklaurent28@gmail.com
         - Mot de passe : nuqwa7-dowkun-gapguJ
     - Ticket :
-        - titre : test vissibilité des ticket assigner au technicien
+        - titre : test visibilité des ticket assigner au technicien
         - Catégorie : Réseau
         - Priorité : Urgent
         - description : Test si un technicien à acces aux tickets qui lui sont assignés.

@@ -14,14 +14,14 @@ describe('Abstract Support', () => {
         cy.location('pathname').should('not.eq', '/login')
         // Créer un nouveau ticket
         cy.get('main a[href="/tickets/new"]').click()
-        cy.get('input[name="title"]').type('test vissibilité des ticket assigner au technicien')
+        cy.get('input[name="title"]').type('test visibilité des ticket assigner au technicien')
         cy.get('select[name="categoryId"]').select('Réseau')
         cy.get('input[name="priority"]').check('urgent')
         cy.get('textarea[name="description"]').type("Test si un technicien à acces aux tickets qui lui sont assignés.")
         cy.contains('button','Envoyer le ticket').click()
         cy.contains('button'," Confirmer l’envoi ").click()
         // Selectionner le ticket
-        cy.contains('a','test vissibilité des ticket assigner au technicien').click()
+        cy.contains('a','test visibilité des ticket assigner au technicien').click()
         // Assignation du ticket
         cy.get('select[id="ticket-assignee"]').select('Quentin')
         cy.get('select[id="ticket-priority"]').select('Moyenne')
@@ -35,7 +35,7 @@ describe('Abstract Support', () => {
         cy.location('pathname').should('not.eq', '/login')
         //Vérifier que le ticket lui est bien assigné
         cy.get('aside a[href="/tickets"]').click()
-        cy.contains('a','test vissibilité des ticket assigner au technicien').click()
+        cy.contains('a','test visibilité des ticket assigner au technicien').click()
     })
     
 
