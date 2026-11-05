@@ -7,7 +7,8 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "cypress": "cypress open"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -17,5 +18,12 @@
     "tailwindcss": "^4.3.3",
     "vue": "^3.5.44",
     "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "cypress": "^16.2.1",
+    "cypress-real-events": "^1.15.1",
+    "lighthouse": "13.6.0"
   }
 }

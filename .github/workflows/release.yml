@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Partie de la version à incrémenter
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+concurrency:
+  group: release
+
+permissions:
+  contents: read
+jobs:
+  e2e:
+    uses: ./.github/workflows/e2e.yml
+    secrets: inherit
+    permissions:
+      contents: write
+
+  a11y:
+    uses: ./.github/workflows/a11y.yml
+    secrets: inherit
+    permissions:
+      contents: write
+
+  release:
+    needs: [e2e, a11y]
+
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      NUXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NUXT_PUBLIC_FIREBASE_API_KEY }}
+      NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      NUXT_PUBLIC_FIREBASE_DATABASE_URL: ${{ secrets.NUXT_PUBLIC_FIREBASE_DATABASE_URL }}
+      NUXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NUXT_PUBLIC_FIREBASE_PROJECT_ID }}
+      NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+      NUXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NUXT_PUBLIC_FIREBASE_APP_ID }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm generate
+
+      - name: Calcul de la version
+        id: version
+        env:
+          BUMP: ${{ inputs.bump || 'patch' }}
+        run: |
+          last=$(git tag --list 'v*.*.*' --sort=-v:refname | head -n1)
+          IFS=. read -r major minor patch <<< "${last:-v0.0.0}"
+          major=${major#v}
+          case "$BUMP" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            *)     patch=$((patch + 1)) ;;
+          esac
+          echo "version=v$major.$minor.$patch" >> "$GITHUB_OUTPUT"
+
+      - name: Création de la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          (cd .output/public && zip -qr "$GITHUB_WORKSPACE/abstract-support-$VERSION.zip" .)
+          gh release create "$VERSION" "abstract-support-$VERSION.zip" \
+            --target "$GITHUB_SHA" --title "$VERSION" --generate-notes
