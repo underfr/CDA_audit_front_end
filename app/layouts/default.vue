@@ -23,9 +23,9 @@ const items = computed(()=> NAVIGATION.filter(item=>!item.roles || (profile.valu
       </div>
 
       <div class="drawer-side z-20">
-        <label for="app-drawer" aria-label="Fermer le menu" class="drawer-overlay"></label>
-        <AppSidebar :items="items" />
-      </div>
+  <label for="app-drawer" class="drawer-overlay" aria-hidden="true"></label>
+  <AppSidebar :items="items" />
+</div>
     </div>
   </div>
 </template>

@@ -14,9 +14,10 @@ async function logout(){
 
 <template>
   <aside class="flex min-h-full w-72 flex-col gap-6 border-r border-base-300 bg-base-100 p-4">
-    <NuxtLink to="/dashboard" class="rounded-field p-2" aria-label="Abstract Support, tableau de bord">
-      <AppLogo />
-    </NuxtLink>
+    <NuxtLink to="/dashboard" class="rounded-field p-2">
+  <AppLogo />
+  <span class="sr-only">, tableau de bord</span>
+</NuxtLink>
 
     <nav aria-label="Navigation principale" class="flex-1">
       <ul class="menu w-full gap-1 p-0">

@@ -96,7 +96,7 @@ function formatDate(timestamp: number) {
 </script>
 
 <template>
-  <main class="mx-auto max-w-3xl space-y-4 p-4 sm:p-6 lg:p-8">
+  <div class="mx-auto max-w-3xl space-y-4 p-4 sm:p-6 lg:p-8">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold">Notifications</h1>
       <button class="btn btn-sm btn-outline" :disabled="!hasUnread" @click="onMarkAllAsRead">
@@ -163,5 +163,5 @@ function formatDate(timestamp: number) {
         </div>
       </nav>
     </template>
-  </main>
+  </div>
 </template>
