@@ -1,11 +1,14 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: "./tests",
+  use: {
+    baseURL: "http://localhost:3000",
+  },
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
+    command: process.env.CI ? "node .output/server/index.mjs" : "pnpm dev",
+    url: "http://localhost:3000/login",
+    reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
 });

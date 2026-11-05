@@ -1,11 +1,20 @@
+import { existsSync, readFileSync } from "node:fs";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
+// Mêmes identifiants que Cypress : cypress.env.json en local, secrets CYPRESS_* dans GitHub Actions
+const local = existsSync("cypress.env.json") ? JSON.parse(readFileSync("cypress.env.json", "utf8")) : {};
+const email = process.env.CYPRESS_ADMIN_EMAIL || local.ADMIN_EMAIL;
+const password = process.env.CYPRESS_ADMIN_PASSWORD || local.ADMIN_PASSWORD;
+
 // Connexion avant chaque test
 test.beforeEach(async ({ page }) => {
-    await page.goto("http://localhost:3000/login");
-    await page.fill("#login-email", "jean.jacque@mail.com");
-    await page.fill("#login-password", "Jean@31!");
+    if (!email || !password) {
+        throw new Error("ADMIN_EMAIL / ADMIN_PASSWORD manquants : ajoute-les dans cypress.env.json (ou en secrets CYPRESS_* sur GitHub).");
+    }
+    await page.goto("/login");
+    await page.fill("#login-email", email);
+    await page.fill("#login-password", password);
     await page.click("button[type='submit']");
     // La page login redirige vers /dashboard après connexion
     await page.waitForURL("**/dashboard");
@@ -25,13 +34,15 @@ const pages = [
 // Un test généré pour chaque page de la liste
 for (const p of pages) {
     test(`la page ${p.nom} n'a pas de problème d'accessibilité`, async ({ page }) => {
-        await page.goto("http://localhost:3000" + p.url);
-        await page.waitForLoadState("networkidle");
-        console.log("Page analysée :", page.url());
+        await page.goto(p.url);
 
-        const resultats = await new AxeBuilder({ page })
-            .exclude(".nuxt-devtools-frame, .nuxt-devtools-label, .nuxt-devtools-label-secondary")
-            .analyze();
+        // Le contenu s'affiche une fois le middleware passé : sans redirection, on est bien sur la bonne page
+        await expect(page.locator("main")).toBeVisible();
+        await expect(page).toHaveURL(p.url);
+        // Les données Firebase arrivent par WebSocket : on attend la fin du chargement avant d'analyser
+        await expect(page.getByText(/Chargement/)).toHaveCount(0);
+
+        const resultats = await new AxeBuilder({ page }).analyze();
 
         const problemes = [];
         for (const v of resultats.violations) {
