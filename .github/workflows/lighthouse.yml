@@ -1,0 +1,52 @@
+name: Lighthouse
+
+on:
+  pull_request:
+    branches: [dev, main]
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    env:
+      NUXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.TEST_FIREBASE_API_KEY }}
+      NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.TEST_FIREBASE_AUTH_DOMAIN }}
+      NUXT_PUBLIC_FIREBASE_DATABASE_URL: ${{ secrets.TEST_FIREBASE_DATABASE_URL }}
+      NUXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.TEST_FIREBASE_PROJECT_ID }}
+      NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.TEST_FIREBASE_STORAGE_BUCKET }}
+      NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.TEST_FIREBASE_MESSAGING_SENDER_ID }}
+      NUXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.TEST_FIREBASE_APP_ID }}
+      CYPRESS_COLLABORATOR_EMAIL: ${{ secrets.CYPRESS_COLLABORATOR_EMAIL }}
+      CYPRESS_COLLABORATOR_PASSWORD: ${{ secrets.CYPRESS_COLLABORATOR_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - run: pnpm build
+
+      - name: Audit Lighthouse
+        run: |
+          node .output/server/index.mjs &
+          timeout 60 bash -c 'until curl -sf -o /dev/null http://localhost:3000/login; do sleep 1; done'
+          node scripts/lighthouse.mjs
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: lighthouse-report
+          path: lighthouse-report
+          retention-days: 7
