@@ -1,4 +1,4 @@
-### [AUTH-01] [Connexion avec des données valides]
+ [AUTH-01] [Connexion avec des données valides]
 
 - **Objectif :** Vérifier que le formulaire de connexion est fonctionnel
 - **Préparation :** Compte non connecté, départ du test sur la page login
