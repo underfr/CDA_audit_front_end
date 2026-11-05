@@ -34,7 +34,7 @@ const stopListening = onValue(
 onUnmounted(stopListening)
 
 
-const form = reactive({ displayName: '', email: '', role: 'collaborator' as Role })
+const form = useDraft('user', { displayName: '', email: '', role: 'collaborator' as Role })
 const creating = ref(false)
 const createError = ref('')
 const createSuccess = ref('')
@@ -45,8 +45,8 @@ async function submit() {
   createError.value = ''
   createSuccess.value = ''
   try {
-    await createAccount({ displayName: form.displayName.trim(), email: form.email.trim(), role: form.role })
-    createSuccess.value = `Compte créé. ${form.email} va recevoir un e-mail pour choisir son mot de passe.`
+    await createAccount({ displayName: form.value.displayName.trim(), email: form.value.email.trim(), role: form.value.role })
+    createSuccess.value = `Compte créé. ${form.value.email} va recevoir un e-mail pour choisir son mot de passe.`
     Object.assign(form, { displayName: '', email: '', role: 'collaborator' })
   } catch (e) {
     createError.value = e instanceof FirebaseError && e.code === 'auth/email-already-in-use'
