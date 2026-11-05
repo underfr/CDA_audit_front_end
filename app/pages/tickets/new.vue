@@ -69,6 +69,7 @@ async function onSubmit(data: TicketFormData) {
 	} finally {
 		pending.value = false
 	}
-	
+  clearDraft("ticket")
+  await navigateTo("/tickets")
 }
 </script>

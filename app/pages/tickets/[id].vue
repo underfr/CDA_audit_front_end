@@ -28,7 +28,7 @@ const technicians = isManager ? useTechnicians() : ref<UserProfile[]>([])
 
 const actionPending = ref(false)
 const actionError = ref('')
-const commentBody = ref('')
+const commentBody = useDraft(`comment:${id}`, '')
 const commentPending = ref(false)
 const commentError = ref('')
 

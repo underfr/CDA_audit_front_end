@@ -188,7 +188,7 @@
 		<div
 			class="flex flex-wrap justify-end gap-2 border-t border-base-300 pt-4"
 		>
-			<NuxtLink to="/dashboard" class="btn btn-ghost">Annuler</NuxtLink>
+			<NuxtLink to="/dashboard" class="btn btn-ghost" @click="clearDraft('ticket')">Annuler</NuxtLink>
 			<button type="submit" class="btn btn-primary" :disabled="pending">
 				<span
 					v-if="pending"
@@ -227,7 +227,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Category, TicketFormErrors } from "~/types";
+import type { Category, TicketFormErrors, TicketPriority } from "~/types";
 
 withDefaults(
 	defineProps<{
@@ -241,19 +241,20 @@ withDefaults(
 	{ errors: () => ({}) },
 );
 
+// Brouillon sauvegardé en localStorage (sans les pièces jointes : un fichier ne peut pas y être stocké)
+const draft = useDraft("ticket", { title: "", categoryId: "", priority: "medium" as TicketPriority, description: "" });
+const { title, categoryId, priority, description } = toRefs(draft.value);
+
 // Title
-const title = ref("");
 const isTitleValid = computed(()=>
 	title.value.trim().length >=5 && title.value.trim().length <= 120
 )
 
 // Category
-const categoryId = ref("");
 const isCategoryValid = computed(()=>
 	categoryId.value !== ''
 )
 // Priority 
-const priority = ref<TicketPriority>("medium");
 
 
 // Attachment
@@ -274,7 +275,6 @@ const isAttachmentValid = computed(()=>
 )
 
 // Description
-const description = ref("");
 const isDescriptionValid = computed(()=>
 	description.value.trim().length >= 10 && description.value.trim().length <= 2000
 )

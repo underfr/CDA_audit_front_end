@@ -21,7 +21,7 @@ onUnmounted(() => {
 })
 
 // Ajout
-const newName = ref('')
+const newName = useDraft('category', '')
 const creating = ref(false)
 const createError = ref('')
 

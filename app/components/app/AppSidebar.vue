@@ -8,6 +8,7 @@ const { $auth } = useNuxtApp()
 
 async function logout(){
   await signOut($auth)
+  clearAllDrafts()
   await navigateTo('/login')
 }
 </script>
