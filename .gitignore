@@ -26,5 +26,5 @@ cypress.env.json
 
 test-results/
 playwright-report/
-
+reports/
 lighthouse-report/

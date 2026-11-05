@@ -81,6 +81,9 @@ try {
     await context.close()
     rmSync(profile, { recursive: true, force: true })
 }
+// Résultats bruts, transformés en rapport par scripts/test-report.mjs
+mkdirSync('reports', { recursive: true })
+writeFileSync('reports/lighthouse.json', JSON.stringify({ minScores: MIN_SCORES, results }))
 
 const percent = (score) => (score === null ? 'erreur' : Math.round(score * 100))
 const table = [

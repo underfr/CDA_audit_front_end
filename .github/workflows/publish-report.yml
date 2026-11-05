@@ -1,0 +1,50 @@
+name: Publication d'un rapport
+
+on:
+  workflow_call:
+    inputs:
+      suite:
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    continue-on-error: true # un rapport non publié ne doit pas faire échouer les tests ni bloquer une release
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: report-${{ inputs.suite }}
+          path: incoming
+
+      - uses: actions/checkout@v7
+        with:
+          ref: test-reports
+          path: repo
+
+      - name: Publication sur la branche test-reports
+        working-directory: repo
+        env:
+          SUITE: ${{ inputs.suite }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          dir="runs/$(date -u +%F)_${SHA:0:7}"
+          # Plusieurs workflows publient en même temps : on repart de la dernière version à chaque essai
+          for attempt in 1 2 3 4 5; do
+            git fetch --depth=1 origin test-reports
+            git reset --hard FETCH_HEAD
+            mkdir -p "$dir"
+            cp "../incoming/$SUITE.md" "$dir/$SUITE.md"
+            { echo "# Rapports de tests"; echo; ls -r runs | sed 's|.*|- [&](runs/&)|'; } > README.md
+            git add -A
+            git diff --cached --quiet && exit 0
+            git commit -m "Rapport $SUITE ${SHA:0:7}"
+            git push origin HEAD:test-reports && exit 0
+            sleep $((attempt * 5))
+          done
+          exit 1

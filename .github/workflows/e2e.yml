@@ -56,3 +56,22 @@ jobs:
         with:
           name: cypress-screenshots
           path: cypress/screenshots
+      - name: Rapport
+        if: always()
+        env:
+          REPORT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/test-report.mjs e2e
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: report-e2e
+          path: reports/e2e.md
+  report:
+    needs: e2e
+    if: ${{ !cancelled() }}
+    permissions:
+      contents: write
+    uses: ./.github/workflows/publish-report.yml
+    with:
+      suite: e2e

@@ -40,3 +40,24 @@ jobs:
       - run: pnpm build
 
       - run: pnpm exec playwright test
+
+      - name: Rapport
+        if: always()
+        env:
+          REPORT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/test-report.mjs a11y
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: report-a11y
+          path: reports/a11y.md
+
+  report:
+    needs: a11y
+    if: ${{ !cancelled() }}
+    permissions:
+      contents: write
+    uses: ./.github/workflows/publish-report.yml
+    with:
+      suite: a11y

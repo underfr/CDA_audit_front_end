@@ -20,10 +20,14 @@ jobs:
   e2e:
     uses: ./.github/workflows/e2e.yml
     secrets: inherit
+    permissions:
+      contents: write
 
   a11y:
     uses: ./.github/workflows/a11y.yml
     secrets: inherit
+    permissions:
+      contents: write
 
   release:
     needs: [e2e, a11y]
