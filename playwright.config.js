@@ -2,6 +2,7 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
+  reporter: [["list"], ["json", { outputFile: "reports/a11y.json" }]],
   use: {
     baseURL: "http://localhost:3000",
   },

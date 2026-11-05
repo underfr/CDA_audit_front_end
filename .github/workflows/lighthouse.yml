@@ -50,3 +50,24 @@ jobs:
           name: lighthouse-report
           path: lighthouse-report
           retention-days: 7
+
+      - name: Rapport
+        if: always()
+        env:
+          REPORT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/test-report.mjs lighthouse
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: report-lighthouse
+          path: reports/lighthouse.md
+
+  report:
+    needs: lighthouse
+    if: ${{ !cancelled() }}
+    permissions:
+      contents: write
+    uses: ./.github/workflows/publish-report.yml
+    with:
+      suite: lighthouse
