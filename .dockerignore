@@ -1,0 +1,28 @@
+# Secrets : la config Firebase est passée au démarrage du conteneur
+.env
+.env.*
+cypress.env.json
+
+# Dépendances et sorties de build, recréées dans l'image
+node_modules
+.nuxt
+.output
+.data
+
+# Inutile pour faire tourner l'application
+.git
+.github
+.idea
+cypress
+cypress.config.js
+tests
+playwright.config.js
+scripts
+docs
+reports
+test-results
+playwright-report
+lighthouse-report
+README.md
+Dockerfile
+.dockerignore
