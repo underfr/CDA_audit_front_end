@@ -7,14 +7,11 @@ const props = defineProps<{ user: UserProfile }>()
 
 const { $db } = useNuxtApp()
 
-// Notifications
-
 const notifications = ref<AppNotification[]>([])
 const lastRead = ref(0)
 const readIds = ref<Record<string, boolean>>({})
 const readReady = ref(false)
 
-// La pastille s'affiche s'il reste au moins une notification non lue
 const hasUnread = computed(
   () => readReady.value && notifications.value.some((n) => isNotificationUnread(n, lastRead.value, readIds.value)),
 )
@@ -33,8 +30,6 @@ onMounted(() => {
     readReady.value = true
   })
 })
-
-// Recherche
 
 const tickets = ref<Ticket[]>([])
 const stopTickets = new TicketService().listFor(props.user, (list) => { tickets.value = list })
@@ -60,7 +55,6 @@ function submit() {
   close()
 }
 
-// Ferme la liste quand le focus quitte la zone (clic ailleurs, Tab après le dernier résultat)
 function onFocusOut(event: FocusEvent) {
   if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null)) open.value = false
 }
@@ -75,9 +69,10 @@ onUnmounted(() => {
 <template>
   <header
     class="sticky top-0 z-10 flex items-center gap-3 border-b border-base-300 bg-base-100 px-4 py-3 sm:px-6 lg:px-8">
-    <label for="app-drawer" class="btn btn-square btn-ghost lg:hidden" aria-label="Ouvrir le menu">
-      <AppIcon name="menu" />
-    </label>
+    <label for="app-drawer" class="btn btn-square btn-ghost lg:hidden">
+  <AppIcon name="menu" />
+  <span class="sr-only">Ouvrir le menu</span>
+</label>
 
     <form
       role="search"
@@ -87,22 +82,23 @@ onUnmounted(() => {
       @keydown.esc="open = false"
     >
       <label class="input h-8 w-full">
-        <svg class="h-[1em] opacity-50" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <svg class="h-[1em] " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor">
             <circle cx="11" cy="11" r="8"></circle>
             <path d="m21 21-4.3-4.3"></path>
           </g>
         </svg>
         <input
-          v-model="search"
-          type="search"
-          autocomplete="off"
-          aria-label="Rechercher un ticket"
-          aria-controls="search-results"
-          placeholder="Rechercher un ticket (titre ou n°)"
-          @focus="open = true"
-          @input="open = true"
-        />
+  v-model="search"
+  type="search"
+  class="placeholder:text-base-content/80"
+  autocomplete="off"
+  aria-label="Rechercher un ticket"
+  :aria-controls="open && search.trim() ? 'search-results' : undefined"
+  placeholder="Rechercher un ticket (titre ou n°)"
+  @focus="open = true"
+  @input="open = true"
+/>
       </label>
 
       <div
@@ -119,18 +115,16 @@ onUnmounted(() => {
               @click="close"
             >
               <span class="truncate text-sm font-medium">{{ ticket.title }}</span>
-              <span class="text-xs text-base-content/75">{{ ticketNumber(ticket) }} · {{ STATUS_LABELS[ticket.status] }}</span>
+              <span class="text-xs text-base-content/80">{{ ticketNumber(ticket) }} · {{ STATUS_LABELS[ticket.status] }}</span>
             </NuxtLink>
           </li>
         </ul>
-        <p v-else class="px-3 py-2 text-sm text-base-content/75">Aucun ticket trouvé.</p>
+        <p v-else class="px-3 py-2 text-sm text-base-content/80">Aucun ticket trouvé.</p>
       </div>
 
-      <!-- Toujours présent dans la page, sinon les lecteurs d'écran n'annoncent pas les changements -->
       <p role="status" class="sr-only">{{ open && search.trim() ? `${results.length} résultat(s)` : '' }}</p>
     </form>
 
-    <!-- Groupe de droite : notifications + séparation + profil -->
     <div class="ml-auto flex items-center gap-3">
       <NuxtLink
         to="/notifications"
@@ -145,13 +139,19 @@ onUnmounted(() => {
 
       <div class="text-right leading-tight">
         <p class="text-sm font-semibold">{{ user.displayName }}</p>
-        <p class="text-xs text-base-content/75">{{ ROLE_LABELS[user.role] }}</p>
+        <p class="text-xs text-base-content/80">{{ ROLE_LABELS[user.role] }}</p>
       </div>
       <div class="avatar avatar-placeholder" aria-hidden="true">
-        <div class="w-10 rounded-full bg-primary text-primary-content">
+        <div class="w-10 rounded-full bg-neutral text-neutral-content">
           <span class="font-semibold">{{ user.displayName.charAt(0) }}</span>
         </div>
       </div>
     </div>
   </header>
 </template>
+<style scoped>
+input::placeholder {
+  color: #4b5563 !important;
+  opacity: 1 !important;
+}
+</style>
