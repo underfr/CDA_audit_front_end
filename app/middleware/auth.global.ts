@@ -1,6 +1,20 @@
+/**
+ * @file Global route guard enforcing authentication, active accounts and per-page roles.
+ */
+
 import { signOut } from 'firebase/auth'
 import { get, ref as dbRef } from 'firebase/database'
 
+/**
+ * Runs before every navigation and decides whether it continues:
+ * - signed-out visitors can only open `/login`;
+ * - the profile is loaded into `useProfile()` when it is missing or belongs to another user;
+ * - accounts with no profile or disabled accounts are signed out and sent to `/login`;
+ * - signed-in users opening `/login`, or a page whose `roles` meta excludes them, go to `/dashboard`.
+ *
+ * @param to - Target route.
+ * @returns A redirection, or `undefined` to let the navigation continue.
+ */
 export default defineNuxtRouteMiddleware(async (to) => {
     const { $auth, $db } = useNuxtApp()
     await $auth.authStateReady()

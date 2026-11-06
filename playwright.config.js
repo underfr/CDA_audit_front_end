@@ -1,3 +1,8 @@
+/**
+ * @file Playwright configuration of the accessibility tests. It starts the application when needed
+ * (built server in CI, dev server locally) and saves the raw results in `reports/a11y.json`.
+ */
+
 import { defineConfig } from "@playwright/test";
 
 export default defineConfig({

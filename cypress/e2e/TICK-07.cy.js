@@ -1,3 +1,9 @@
+/**
+ * @file Full ticket flow between a manager and a technician: once resolved, a ticket no longer
+ * appears among the tickets in progress of the dashboard.
+ * @see docs/tests/TICK-07.md
+ */
+
 describe('Abstract Support', () => {
   it('Un ticket résolu ne s’affiche plus dans « Tickets en cours »', () => {
     // Titre unique : on est sûr de suivre CE ticket et pas un ancien

@@ -1,3 +1,8 @@
+/**
+ * @file Failed sign-ins: an invalid e-mail address, a wrong password or missing fields do not sign the user in.
+ * @see docs/tests/AUTH-02.md
+ */
+
 describe('Abstract Support', () => {
   beforeEach(() => {
     cy.visit('/login', {

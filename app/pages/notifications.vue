@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * @file Notifications page (`/notifications`): paginated list of the user's notifications,
+ * which can be marked as read one by one or all at once.
+ */
+
 import {
   listenNotifications,
   listenReadState,
@@ -9,48 +14,67 @@ import {
 import type { AppNotification } from '../types'
 
 const { $db } = useNuxtApp()
+/** Profile of the signed-in user. */
 const profile = useProfile()
 
+/** Number of notifications per page. */
 const PER_PAGE = 20
 
+/** Notifications of the user, newest first. */
 const notifications = ref<AppNotification[]>([])
+/** Time of the last "mark all as read", in milliseconds. */
 const lastRead = ref(0)
+/** Notifications read one by one, by notification id. */
 const readIds = ref<Record<string, boolean>>({})
+/** Whether the page is waiting for its first data. */
 const loading = ref(true)
+/** Current page, starting at 1. */
 const page = ref(1)
 
-// Pour savoir quand les deux écoutes ont répondu
+/** Whether the notifications listener has answered. */
 let notificationsReady = false
+/** Whether the read state listener has answered. */
 let readStateReady = false
 
+/** Ends the loading state once both listeners have answered. */
 function checkLoaded() {
   if (notificationsReady && readStateReady) {
     loading.value = false
   }
 }
 
-// Pagination : 20 notifications par page
+/** Number of pages, at least 1. */
 const totalPages = computed(() => Math.max(1, Math.ceil(notifications.value.length / PER_PAGE)))
 
+/** Notifications of the current page. */
 const pageNotifications = computed(() => {
   const start = (page.value - 1) * PER_PAGE
   return notifications.value.slice(start, start + PER_PAGE)
 })
 
-// Si la dernière page disparaît, on revient sur la dernière existante
+// If the last page disappears, go back to the last one that still exists
 watch(totalPages, (value) => {
   if (page.value > value) {
     page.value = value
   }
 })
 
+/**
+ * Tells whether a notification is unread according to the current read state.
+ *
+ * @param notification - Notification to check.
+ * @returns `true` when the notification is unread.
+ */
 function isUnread(notification: AppNotification) {
   return isNotificationUnread(notification, lastRead.value, readIds.value)
 }
 
+/** Whether at least one notification is unread. */
 const hasUnread = computed(() => notifications.value.some((n) => isUnread(n)))
 
+/** Stops listening to the notifications; does nothing before the page is mounted. */
 let stopNotifications = () => {}
+/** Stops listening to the read state; does nothing before the page is mounted. */
 let stopReadState = () => {}
 
 onMounted(() => {
@@ -79,17 +103,28 @@ onUnmounted(() => {
   stopReadState()
 })
 
-// Utilisé par le bouton et par le clic sur la notification
+/**
+ * Marks an unread notification as read. Used by the button and by the click on the notification.
+ *
+ * @param notification - Notification to mark.
+ */
 function onMarkAsRead(notification: AppNotification) {
   if (!profile.value || !isUnread(notification)) return
   markAsRead($db, profile.value.id, notification.id)
 }
 
+/** Marks all the notifications as read. */
 function onMarkAllAsRead() {
   if (!profile.value) return
   markAllAsRead($db, profile.value.id)
 }
 
+/**
+ * Formats the date of a notification in French.
+ *
+ * @param timestamp - Time in milliseconds since the epoch.
+ * @returns The formatted date and time.
+ */
 function formatDate(timestamp: number) {
   return new Date(timestamp).toLocaleString('fr-FR')
 }

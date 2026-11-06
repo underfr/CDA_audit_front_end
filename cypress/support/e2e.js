@@ -1,3 +1,7 @@
+/**
+ * @file Cypress support file: loads the custom commands and real events, and disables Nuxt DevTools.
+ */
+
 // ***********************************************************
 // This example support/e2e.js is processed and
 // loaded automatically before your test files.
@@ -17,7 +21,11 @@
 import './commands'
 import 'cypress-real-events'
 
-// Désactive Nuxt DevTools pendant les tests
+/**
+ * Disables Nuxt DevTools during the tests.
+ *
+ * @param {Window} win - Window of the application, before it loads.
+ */
 Cypress.on('window:before:load', (win) => {
   win.__NUXT_DEVTOOLS_DISABLE__ = true
 })

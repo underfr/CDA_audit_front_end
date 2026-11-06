@@ -1,3 +1,8 @@
+/**
+ * @file A ticket created with valid data appears in the ticket list.
+ * @see docs/tests/TICK-01.md
+ */
+
 describe('Abstract Support', () => {
     beforeEach(() => {
         cy.login('COLLABORATOR')

@@ -1,3 +1,8 @@
+/**
+ * @file A technician can see and open the tickets assigned to them.
+ * @see docs/tests/TICK-12.md
+ */
+
 describe('Abstract Support', () => {
     it('Le technicien peux voir les tickets qui lui sont assigné', () => {
         const titre = `test visibilité des ticket assigner au technicien ${Date.now()}`

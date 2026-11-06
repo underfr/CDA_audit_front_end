@@ -1,7 +1,14 @@
 <script setup lang="ts">
+/**
+ * @file Card showing a single indicator.
+ */
+
 defineProps<{
+  /** Name of the indicator. */
   label: string
+  /** Value of the indicator, already formatted when it is a string. */
   value: number | string
+  /** Optional detail displayed under the value. */
   hint?: string
 }>()
 </script>

@@ -1,5 +1,14 @@
 <script setup lang="ts">
-defineProps<{ message: string }>()
+/**
+ * @file Placeholder displayed when a list has nothing to show.
+ *
+ * @slot default - Optional action displayed under the message.
+ */
+
+defineProps<{
+  /** Text explaining why there is nothing to show. */
+  message: string
+}>()
 </script>
 
 <template>

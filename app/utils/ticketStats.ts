@@ -1,9 +1,22 @@
+/**
+ * @file Indicators computed from the loaded tickets for the dashboard, list and analytics pages.
+ * Every function that depends on the current time takes it as a `now` parameter.
+ */
+
 import type { BarItem, StatItem, Ticket, TicketStatus, UserProfile } from '~/types'
 import { STATUS_LABELS } from './labels'
 
+/** One minute, in milliseconds. */
 const MINUTE = 60 * 1000
+/** One day, in milliseconds. */
 const DAY = 24 * 60 * MINUTE
 
+/**
+ * Finds the start of the week containing a date.
+ *
+ * @param now - Reference date.
+ * @returns Monday of that week at midnight, local time.
+ */
 function startOfWeek(now: Date) {
     const monday = new Date(now)
     monday.setHours(0, 0, 0, 0)
@@ -11,8 +24,22 @@ function startOfWeek(now: Date) {
     return monday
 }
 
+/**
+ * Tells whether a ticket still needs work.
+ *
+ * @param ticket - Ticket to check.
+ * @returns `true` when its status is `new` or `in_progress`.
+ */
 export const isOpen = (ticket: Ticket) => ticket.status === "new" || ticket.status === "in_progress"
 
+/**
+ * Computes the indicators of the ticket management page: open urgent tickets, tickets in progress,
+ * unassigned open tickets and tickets resolved during the last 24 hours.
+ *
+ * @param tickets - Tickets visible to the user.
+ * @param now - Current time.
+ * @returns The indicators, in display order.
+ */
 export function computeTicketListStats(tickets: Ticket[], now = new Date()): StatItem[] {
     const dayAgo = now.getTime() - DAY
 
@@ -24,6 +51,12 @@ export function computeTicketListStats(tickets: Ticket[], now = new Date()): Sta
     ]
 }
 
+/**
+ * Formats a duration in short French units: `45 min`, `2 h 05` or `3 j 4 h`.
+ *
+ * @param ms - Duration in milliseconds, rounded to the nearest minute.
+ * @returns The formatted duration.
+ */
 export function formatDuration(ms: number) {
     const minutes = Math.round(ms / MINUTE)
     if (minutes < 60) return `${minutes} min`
@@ -32,6 +65,15 @@ export function formatDuration(ms: number) {
     return `${Math.floor(hours / 24)} j ${hours % 24} h`
 }
 
+/**
+ * Computes the indicators of the dashboard: open tickets and those opened this week, resolved tickets
+ * awaiting confirmation, tickets closed during the last 30 days and the average first response time.
+ *
+ * @param tickets - Tickets visible to the user.
+ * @param role - Role of the user, which selects the hint shown on tickets awaiting confirmation.
+ * @param now - Current time.
+ * @returns The indicators, in display order.
+ */
 export function computeDashboardStats(tickets: Ticket[], role: Role, now = new Date()): StatItem[] {
     const weekStart = startOfWeek(now).getTime()
     const monthAgo = now.getTime() - 30 * DAY
@@ -60,6 +102,14 @@ export function computeDashboardStats(tickets: Ticket[], role: Role, now = new D
     ]
 }
 
+/**
+ * Computes the indicators of the analytics page: open tickets and those created today, unassigned
+ * open tickets, tickets resolved during the last 7 days and the average resolution time.
+ *
+ * @param tickets - All the tickets.
+ * @param now - Current time.
+ * @returns The indicators, in display order.
+ */
 export function computeAnalyticsStats(tickets: Ticket[], now = new Date()): StatItem[] {
     const todayStart = new Date(now)
     todayStart.setHours(0, 0, 0, 0)
@@ -85,7 +135,12 @@ export function computeAnalyticsStats(tickets: Ticket[], now = new Date()): Stat
     ]
 }
 
-/** Nombre de tickets pour chaque statut, dans l'ordre du cycle de vie. */
+/**
+ * Counts the tickets of each status.
+ *
+ * @param tickets - Tickets to count.
+ * @returns One row per status, in lifecycle order.
+ */
 export function computeTicketsByStatus(tickets: Ticket[]): BarItem[] {
     return (Object.keys(STATUS_LABELS) as TicketStatus[]).map(status => ({
         label: STATUS_LABELS[status],
@@ -93,7 +148,13 @@ export function computeTicketsByStatus(tickets: Ticket[]): BarItem[] {
     }))
 }
 
-/** Nombre de tickets ouverts affectés à chaque technicien, du plus chargé au moins chargé. */
+/**
+ * Counts the open tickets assigned to each technician.
+ *
+ * @param tickets - Tickets to count.
+ * @param technicians - Technicians to include, even with no ticket.
+ * @returns One row per technician, from the most to the least loaded.
+ */
 export function computeWorkloadByTechnician(tickets: Ticket[], technicians: UserProfile[]): BarItem[] {
     return technicians
         .map(tech => ({

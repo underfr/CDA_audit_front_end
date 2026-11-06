@@ -1,3 +1,7 @@
+/**
+ * @file Firebase Realtime Database access for the tickets, their comments and their history.
+ */
+
 import {
 	child,
 	type DataSnapshot,
@@ -17,22 +21,26 @@ import {
 } from "firebase/database";
 import type { Ticket, TicketStatus, UserProfile} from "~/types";
 
-/** Ce que l'appelant fournit : id et dates sont gérés par la base. */
+/** Data provided by the caller: the id, number and dates are managed by the service and the database. */
 export type NewTicket = Omit<Ticket, "id" | "number" | "createdAt" | "updatedAt" | "firstResponseAt" | "closedAt" | "resolvedAt">;
 
 /**
- * Accès aux tickets stockés dans la Realtime Database (nœud `tickets`).
+ * Access to the tickets stored in the Realtime Database (`tickets` node).
  *
- * À instancier dans un composable ou dans le script setup d'une page,
- * car le constructeur appelle `useNuxtApp()`.
+ * Instantiate it in a composable or in the script setup of a page,
+ * because the constructor calls `useNuxtApp()`.
  */
 export class TicketService {
+	/** Realtime Database instance. */
 	private db: Database;
+	/** Reference to the `tickets` node. */
 	private ticketsRef: DatabaseReference;
+	/** Reference to the `history` node, organised by ticket. */
 	private historyRef: DatabaseReference;
+	/** Reference to the `comments` node, organised by ticket. */
 	private commentsRef: DatabaseReference;
 
-	/** Récupère la base fournie par le plugin Firebase et pointe sur le nœud `tickets`. */
+	/** Gets the database provided by the Firebase plugin and points at the nodes in use. */
 	constructor() {
 		const { $db } = useNuxtApp();
 		this.db = $db
@@ -41,6 +49,16 @@ export class TicketService {
 		this.commentsRef = ref($db, "comments")
 	}
 
+	/**
+	 * Changes a ticket and traces the change in a single atomic write,
+	 * which also refreshes `updatedAt`.
+	 *
+	 * @param ticketId - Id of the ticket to change.
+	 * @param changes - Ticket fields to write.
+	 * @param entry - Content of the history entry; the actor and date are added here.
+	 * @param actor - User making the change.
+	 * @returns A promise resolved once the write is complete.
+	 */
 	private updateWithHistory(ticketId: string, changes: Record<string, unknown>, entry: Record<string, unknown>, actor: UserProfile) {
 		const entryId = push(child(this.historyRef, ticketId)).key;
 		const updates: Record<string, unknown> = {
@@ -51,6 +69,14 @@ export class TicketService {
 		return update(ref(this.db), updates);
 	}
 
+	/**
+	 * Assigns a ticket to a technician and traces the change.
+	 *
+	 * @param ticket - Ticket to assign.
+	 * @param technician - Technician receiving the ticket.
+	 * @param actor - User making the assignment.
+	 * @returns A promise resolved once the write is complete.
+	 */
 	assign(ticket: Ticket, technician: UserProfile, actor: UserProfile) {
 		return this.updateWithHistory(
 			ticket.id,
@@ -60,10 +86,25 @@ export class TicketService {
 		);
 	}
 
+	/**
+	 * Changes the priority of a ticket and traces the change.
+	 *
+	 * @param ticket - Ticket to change.
+	 * @param priority - New priority.
+	 * @param actor - User making the change.
+	 * @returns A promise resolved once the write is complete.
+	 */
 	updatePriority(ticket: Ticket, priority: TicketPriority, actor: UserProfile) {
 		return this.updateWithHistory(ticket.id, { priority }, { type: "priority", from: ticket.priority, to: priority }, actor);
 	}
 
+	/**
+	 * Listens to the history of a ticket in real time, from newest to oldest.
+	 *
+	 * @param ticketId - Id of the ticket.
+	 * @param callback - Receives the history entries.
+	 * @returns A function to call (for example in `onUnmounted`) to stop listening.
+	 */
 	watchHistory(ticketId: string, callback: (entries: HistoryEntry[]) => void) {
 		return onValue(child(this.historyRef, ticketId), (snapshot) => {
 			const entries: HistoryEntry[] = [];
@@ -76,11 +117,11 @@ export class TicketService {
 	}
 
 	/**
-	 * Écoute l'historique de tous les tickets (flux d'activité de la page Pilotage),
-	 * trié du plus récent au plus ancien.
+	 * Listens to the history of all the tickets (activity feed of the analytics page),
+	 * sorted from newest to oldest.
 	 *
-	 * @param callback - reçoit toutes les entrées d'historique.
-	 * @returns une fonction à appeler (par exemple dans `onUnmounted`) pour arrêter l'écoute.
+	 * @param callback - Receives all the history entries.
+	 * @returns A function to call (for example in `onUnmounted`) to stop listening.
 	 */
 	watchAllHistory(callback: (entries: HistoryEntry[]) => void) {
 		return onValue(this.historyRef, (snapshot) => {
@@ -96,6 +137,13 @@ export class TicketService {
 		});
 	}
 
+	/**
+	 * Listens to a list of tickets and converts it on every change.
+	 *
+	 * @param source - Node or query to listen to.
+	 * @param callback - Receives the array of tickets.
+	 * @returns A function that stops listening.
+	 */
 	private watchList(source: Query, callback: (tickets: Ticket[]) => void) {
 		return onValue(source, (snapshot) => {
 			const tickets: Ticket[] = [];
@@ -107,12 +155,12 @@ export class TicketService {
 	}
 
 	/**
-	 * Transforme un snapshot Firebase en `Ticket` utilisable par l'interface.
-	 * Ajoute l'id (la clé du nœud), remet à `null` les champs absents
-	 * (Realtime Database ne stocke pas les `null`) et convertit les dates.
+	 * Converts a Firebase snapshot into a `Ticket` usable by the interface.
+	 * Adds the id (the node key), restores missing fields to `null`
+	 * (the Realtime Database does not store `null`) and converts the dates.
 	 *
-	 * @param snapshot - le snapshot d'un ticket.
-	 * @returns le ticket converti.
+	 * @param snapshot - Snapshot of a ticket.
+	 * @returns The converted ticket.
 	 */
 	private toTicket(snapshot: DataSnapshot): Ticket {
 		const data = snapshot.val();
@@ -130,12 +178,12 @@ export class TicketService {
 	}
 
 	/**
-	 * Crée un ticket avec une clé générée par Firebase et un numéro lisible (ex. « RES-0042 »).
-	 * Le statut est toujours `new` (CA-01), quelle que soit la valeur fournie.
-	 * Les dates de création et de mise à jour sont posées par le serveur.
+	 * Creates a ticket with a key generated by Firebase and a readable number (e.g. "RES-0042").
+	 * The status is always `new` (CA-01), whatever value is provided.
+	 * The creation and update dates are set by the server.
 	 *
-	 * @param ticket - les données du ticket, sans id, numéro ni dates.
-	 * @returns la référence du ticket créé ; son id est dans `.key`.
+	 * @param ticket - Ticket data, without id, number or dates.
+	 * @returns The reference of the created ticket; its id is in `.key`.
 	 */
 	async create(ticket: NewTicket) {
 		// La transaction garantit deux numéros différents si deux tickets sont créés en même temps
@@ -150,15 +198,14 @@ export class TicketService {
 	}
 
 	/**
-     * Écoute un ticket en temps réel : le callback est appelé tout de suite,
-     * puis à chaque modification du ticket.
-     *
-     * @param id - l'id du ticket à écouter.
-     * @param callback - reçoit le ticket, ou `null` s'il n'existe pas.
-     * @param onError
-     * @returns une fonction à appeler (par exemple dans `onUnmounted`) pour arrêter l'écoute.
-     */
-
+	 * Listens to a ticket in real time: the callback runs right away,
+	 * then on every change of the ticket.
+	 *
+	 * @param id - Id of the ticket to listen to.
+	 * @param callback - Receives the ticket, or `null` if it does not exist.
+	 * @param onError - Called when the read is refused, for example by the security rules.
+	 * @returns A function to call (for example in `onUnmounted`) to stop listening.
+	 */
 	watchById(id: string, callback: (ticket: Ticket | null) => void, onError?: (error: Error) => void) {
 		return onValue(child(this.ticketsRef, id), (snapshot) => {
 			callback(snapshot.exists() ? this.toTicket(snapshot) : null);
@@ -166,16 +213,24 @@ export class TicketService {
 	}
 
 	/**
-	 * Écoute la liste de tous les tickets en temps réel : le callback est appelé
-	 * tout de suite, puis à chaque ajout, modification ou suppression.
+	 * Listens to all the tickets in real time: the callback runs right away,
+	 * then on every addition, change or deletion.
 	 *
-	 * @param callback - reçoit le tableau des tickets.
-	 * @returns une fonction à appeler (par exemple dans `onUnmounted`) pour arrêter l'écoute.
+	 * @param callback - Receives the array of tickets.
+	 * @returns A function to call (for example in `onUnmounted`) to stop listening.
 	 */
 	list(callback: (tickets: Ticket[]) => void) {
 		return this.watchList(this.ticketsRef, callback)
 	}
 
+	/**
+	 * Listens in real time to the tickets a user works with: all of them for managers and admins,
+	 * assigned ones for technicians and authored ones for collaborators.
+	 *
+	 * @param user - Signed-in user.
+	 * @param callback - Receives the array of tickets.
+	 * @returns A function to call (for example in `onUnmounted`) to stop listening.
+	 */
 	listFor(user: UserProfile, callback: (tickets: Ticket[])=>void){
 		if (user.role === "manager" || user.role === "admin") return this.list(callback)
 		const field = user.role === "technician" ? "assigneeId" : "authorId"
@@ -183,12 +238,12 @@ export class TicketService {
 	}
 
 	/**
-	 * Change le statut, pose les dates de suivi et trace le changement.
+	 * Changes the status, sets the tracking dates and traces the change.
 	 *
-	 * @param ticket - le ticket à modifier.
-	 * @param status - le nouveau statut.
-	 * @param actor - l'utilisateur qui fait l'action.
-	 * @returns une Promise résolue une fois l'écriture terminée.
+	 * @param ticket - Ticket to change.
+	 * @param status - New status.
+	 * @param actor - User making the change.
+	 * @returns A promise resolved once the write is complete.
 	 */
 	updateStatus(ticket: Ticket, status: TicketStatus, actor: UserProfile) {
 		return this.updateWithHistory(
@@ -205,11 +260,11 @@ export class TicketService {
 	}
 
 	/**
-	 * Écoute les commentaires d'un ticket, du plus ancien au plus récent.
+	 * Listens to the comments of a ticket, from oldest to newest.
 	 *
-	 * @param ticketId - l'id du ticket.
-	 * @param callback - reçoit la liste des commentaires.
-	 * @returns une fonction à appeler pour arrêter l'écoute.
+	 * @param ticketId - Id of the ticket.
+	 * @param callback - Receives the list of comments.
+	 * @returns A function to call to stop listening.
 	 */
 	watchComments(ticketId: string, callback: (comments: TicketComment[]) => void) {
 		return onValue(child(this.commentsRef, ticketId), (snapshot) => {
@@ -223,12 +278,12 @@ export class TicketService {
 	}
 
 	/**
-	 * Publie un commentaire sur un ticket.
+	 * Posts a comment on a ticket.
 	 *
-	 * @param ticketId - l'id du ticket.
-	 * @param body - le texte du commentaire, déjà nettoyé.
-	 * @param author - l'utilisateur connecté.
-	 * @returns la référence du commentaire créé.
+	 * @param ticketId - Id of the ticket.
+	 * @param body - Comment text, already trimmed.
+	 * @param author - Signed-in user.
+	 * @returns The reference of the created comment.
 	 */
 	addComment(ticketId: string, body: string, author: UserProfile) {
 		return push(child(this.commentsRef, ticketId), {

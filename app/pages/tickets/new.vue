@@ -28,24 +28,43 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @file Ticket creation page (`/tickets/new`): form and advice for a fast handling.
+ */
+
 import { CategoryService } from '~/services/firebase/category.service'
 import { TicketService } from '~/services/firebase/ticket.service'
 
 
 useHead({ title: 'Nouveau ticket' })
 
+/** Whether the ticket is being created. */
 const pending = ref(false)
+/** Error message displayed by the form. */
 const error = ref("")
+/** Profile of the signed-in user, guaranteed by the auth middleware. */
 const profile = useProfile()
+/** Database access for the tickets. */
 const ticketService = new TicketService()
+/** Database access for the categories. */
 const categoryService = new CategoryService()
+/** Categories offered by the form, updated in real time. */
 const activeCategories = ref<Category[]>([])
+/** Stops listening to the active categories. */
 const stopListening = categoryService.listActive((list) => {
 	activeCategories.value = list
 })
 
 onUnmounted(stopListening)
 
+/**
+ * Creates the ticket from the form values, deletes the draft and goes to the ticket list.
+ *
+ * @param data - Values emitted by the form.
+ * @returns A promise resolved once the navigation is complete.
+ * @todo Stop after a failure: the draft is currently deleted and the user redirected anyway, which hides the error.
+ * @todo Upload the attachments: they are validated by the form but ignored here.
+ */
 async function onSubmit(data: TicketFormData) {
 	const { attachments, ...fields } = data
 	const category = activeCategories.value.find((c) => c.id === fields.categoryId)

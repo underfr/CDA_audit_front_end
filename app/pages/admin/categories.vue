@@ -1,13 +1,21 @@
 <script setup lang="ts">
+/**
+ * @file Category administration page (`/admin/categories`, admins only):
+ * add, disable, enable again or delete the ticket categories.
+ */
+
 import { CategoryService } from '~/services/firebase/category.service'
 import type { Category } from '~/types'
 
 definePageMeta({ roles: ['admin'] })
 useHead({ title: 'Catégories' })
 
+/** Database access for the categories. */
 const service = new CategoryService()
 
+/** All the categories, sorted by name and updated in real time. */
 const categories = ref<Category[]>([])
+/** Stops listening to the categories; `null` before the page is mounted. */
 let stopListening: (() => void) | null = null
 
 onMounted(() => {
@@ -20,11 +28,20 @@ onUnmounted(() => {
   if (stopListening) stopListening()
 })
 
-// Ajout
+// Creation
+/** Name typed in the form, kept as a draft. */
 const newName = useDraft('category', '')
+/** Whether a category is being created. */
 const creating = ref(false)
+/** Error message of the creation form. */
 const createError = ref('')
 
+/**
+ * Creates a category from the typed name.
+ * A blank name is ignored and a name already used, whatever its case, is refused.
+ *
+ * @returns A promise resolved once the attempt is over; failures are displayed, not thrown.
+ */
 async function submit() {
   createError.value = ''
 
@@ -49,9 +66,16 @@ async function submit() {
   }
 }
 
-// Activation / désactivation
+// Enabling / disabling
+/** Error message of the last enable or disable action. */
 const toggleError = ref('')
 
+/**
+ * Switches a category between enabled and disabled.
+ *
+ * @param category - Category to switch.
+ * @returns A promise resolved once the attempt is over; failures are displayed, not thrown.
+ */
 async function toggleActive(category: Category) {
   toggleError.value = ''
   try {
@@ -61,16 +85,30 @@ async function toggleActive(category: Category) {
   }
 }
 
-// Suppression
+// Deletion
+/** Category awaiting confirmation of its deletion; the modal is open while it is set. */
 const categoryToDelete = ref<Category | null>(null)
+/** Whether a deletion is running. */
 const deleting = ref(false)
+/** Error message displayed in the deletion modal. */
 const deleteError = ref('')
 
+/**
+ * Opens the deletion modal for a category.
+ *
+ * @param category - Category to delete.
+ */
 function askDelete(category: Category) {
   deleteError.value = ''
   categoryToDelete.value = category
 }
 
+/**
+ * Deletes the selected category and closes the modal.
+ * The modal stays open with an error message if the deletion fails.
+ *
+ * @returns A promise resolved once the attempt is over; failures are displayed, not thrown.
+ */
 async function confirmDelete() {
   const target = categoryToDelete.value
   if (!target) return

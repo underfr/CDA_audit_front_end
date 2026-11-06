@@ -1,12 +1,31 @@
+/**
+ * @file Form drafts saved in localStorage, per user.
+ */
+
 import type { Ref } from 'vue'
 
+/** Prefix of the localStorage keys holding drafts. */
 const PREFIX = 'draft:'
 
-// La clé contient l'id de l'utilisateur : sur un poste partagé, personne ne récupère le brouillon d'un autre
+/**
+ * Builds the localStorage key of a draft.
+ * The key contains the user id: on a shared computer, nobody retrieves someone else's draft.
+ *
+ * @param name - Name of the draft.
+ * @returns The key specific to the signed-in user.
+ */
 function draftKey(name: string) {
     return `${PREFIX}${useProfile().value?.id}:${name}`
 }
 
+/**
+ * Reads a draft from localStorage.
+ *
+ * @template T - Type of the form value.
+ * @param key - localStorage key of the draft.
+ * @param initial - Value of the empty form, returned when there is no usable draft.
+ * @returns The stored value, merged over `initial` when it is an object.
+ */
 function readDraft<T>(key: string, initial: T): T {
     try {
         const stored = JSON.parse(localStorage.getItem(key) ?? 'null')
@@ -19,12 +38,13 @@ function readDraft<T>(key: string, initial: T): T {
 }
 
 /**
- * Valeur de formulaire sauvegardée en localStorage : elle survit au rechargement de la page.
- * Le brouillon est supprimé dès que la valeur revient à son état initial (formulaire envoyé).
+ * Form value saved in localStorage: it survives a page reload.
+ * The draft is deleted as soon as the value returns to its initial state (form submitted).
  *
- * @param name - le nom du brouillon, unique par formulaire (ex. `comment:${ticketId}`).
- * @param initial - la valeur du formulaire vide.
- * @returns un ref à utiliser à la place de `ref(initial)`.
+ * @template T - Type of the form value.
+ * @param name - Name of the draft, unique per form (e.g. `comment:${ticketId}`).
+ * @param initial - Value of the empty form.
+ * @returns A ref to use instead of `ref(initial)`.
  */
 export function useDraft<T>(name: string, initial: T): Ref<T> {
     const key = draftKey(name)
@@ -45,7 +65,11 @@ export function useDraft<T>(name: string, initial: T): Ref<T> {
     return draft
 }
 
-/** Supprime un brouillon, par exemple quand le formulaire est envoyé depuis la page parente. */
+/**
+ * Deletes a draft, for example when the form is submitted from the parent page.
+ *
+ * @param name - Name of the draft.
+ */
 export function clearDraft(name: string) {
     try {
         localStorage.removeItem(draftKey(name))
@@ -54,7 +78,7 @@ export function clearDraft(name: string) {
     }
 }
 
-/** Supprime tous les brouillons : à la déconnexion, rien ne reste sur le poste. */
+/** Deletes all the drafts: after signing out, nothing remains on the computer. */
 export function clearAllDrafts() {
     try {
         for (const key of Object.keys(localStorage)) {

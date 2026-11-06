@@ -1,9 +1,14 @@
 <script setup lang="ts">
+/**
+ * @file Timeline of ticket changes, or an empty state when there are none.
+ */
+
 import type { HistoryEntry } from '~/types'
 
 defineProps<{
+  /** Entries to display, in the given order. */
   entries: HistoryEntry[]
-  /** Affiche le lien vers le ticket concerné (flux d'activité). */
+  /** Shows the link to the ticket concerned (activity feed). */
   showTicket?: boolean
 }>()
 </script>

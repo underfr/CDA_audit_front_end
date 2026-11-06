@@ -1,12 +1,17 @@
+/**
+ * @file Business rules of the ticket status lifecycle, on the interface side.
+ */
+
 import type { StatusTransition, Ticket, UserProfile } from '~/types'
 
 /**
- * Transitions de statut proposées à l'utilisateur pour ce ticket.
- * Les règles de sécurité doivent appliquer la même table.
+ * Lists the status transitions offered to a user on a ticket.
+ * The assignee moves it from `new` to `in_progress` then to `resolved`; the author then confirms
+ * the resolution or reopens it. The security rules must enforce the same table.
  *
- * @param ticket - le ticket affiché.
- * @param user - l'utilisateur connecté.
- * @returns les boutons à afficher, ou un tableau vide.
+ * @param ticket - Displayed ticket.
+ * @param user - Signed-in user.
+ * @returns The buttons to display, or an empty array.
  */
 export function getTransitions(ticket: Ticket, user: UserProfile): StatusTransition[] {
     const isAssignee = ticket.assigneeId === user.id

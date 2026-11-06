@@ -1,3 +1,8 @@
+/**
+ * @file The dashboard redirects signed-out visitors to the login page.
+ * @see docs/tests/DASH-01.md
+ */
+
 describe('Abstract Support', () => {
   it('Redirige vers /login si on accède au dashboard sans être connecté', () => {
     cy.visit('http://localhost:3000/dashboard', {
