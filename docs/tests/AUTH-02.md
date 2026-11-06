@@ -3,12 +3,8 @@
 - **Objectif :** Vérifier que le formulaire de connexion bloque la connexion si des informations sont incorrectes ou manquantes.
 - **Préparation :** Compte non connecté, départ du test sur la page login
 - **Données utilisées :**
-    - Identifiant invalide :
-        - Identifiant : jean.jacque.com
-        - Mot de passe : Jean@31!
-    - Mot de passe incorrect :
-        - Identifiant : jean.jacque@mail.com
-        - Mot de passe : unAutreMotDePasse
+    - Compte Administrateur invalide : 
+    - Compte Administrateur valide : 
     - Champs manquants :
         - Identifiant vide, mot de passe vide, puis les deux vides
 - **Actions :**

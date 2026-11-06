@@ -3,8 +3,7 @@
 - **Objectif :** Vérifier que le formulaire de création de commentaire affiche un message d'erreur si les données ne sont pas valides.
 - **Préparation :** Compte non connecté, départ du test sur la page login, un ticket existant
 - **Données utilisées :**
-    - Identifiant : jean.jacque@mail.com
-    - Mot de passe : Jean@31!
+    - Compte Administrateur : 
     - Contenu du commentaire : « <script>alert('test')</script> »
 - **Actions :**
   1. Se connecter

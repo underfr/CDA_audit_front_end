@@ -3,8 +3,7 @@
 - **Objectif :** Vérifier que le formulaire de connexion est fonctionnel
 - **Préparation :** Compte non connecté, départ du test sur la page login
 - **Données utilisées :**
-    - Identifiant : jean.jacque@mail.com
-    - Mot de passe : Jean@31!
+    - Compte Administrateur 
 - **Actions :**
   1. Se rendre sur la page login
   2. Saisir les informations du compte
