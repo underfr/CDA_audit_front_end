@@ -1,8 +1,16 @@
 <script setup lang="ts">
+/**
+ * @file Badge showing the status of a ticket.
+ */
+
 import type { TicketStatus } from '~/types'
 
-defineProps<{ status: TicketStatus }>()
+defineProps<{
+  /** Status to display. */
+  status: TicketStatus
+}>()
 
+/** DaisyUI class of the badge for each status. */
 const badgeClasses: Record<TicketStatus, string> = {
   new: 'badge-neutral',
   in_progress: 'badge-primary',

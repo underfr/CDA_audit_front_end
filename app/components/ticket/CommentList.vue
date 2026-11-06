@@ -1,7 +1,14 @@
 <script setup lang="ts">
+/**
+ * @file Comments of a ticket, or an empty state when there are none.
+ */
+
 import type { TicketComment } from '~/types'
 
-defineProps<{ comments: TicketComment[] }>()
+defineProps<{
+  /** Comments to display, in the given order. */
+  comments: TicketComment[]
+}>()
 </script>
 
 <template>

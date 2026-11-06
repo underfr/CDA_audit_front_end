@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * @file User administration page (`/admin/users`, admins only): create accounts, change their
+ * role, disable or delete them. Admins cannot change or delete their own account here.
+ */
+
 import { FirebaseError } from 'firebase/app'
 import { onValue, ref as dbRef, remove, update } from 'firebase/database'
 import type { Role, UserProfile } from '~/types'
@@ -9,15 +14,21 @@ useHead({ title: 'Utilisateurs' })
 
 
 const { $db } = useNuxtApp()
+/** Profile of the signed-in administrator. */
 const profile = useProfile()
+/** Creates a Firebase account and its profile. */
 const createAccount = useCreateAccount()
 
 
+/** All the users, sorted by name and updated in real time. */
 const users = ref<UserProfile[]>([])
+/** Whether the first load of the users is running. */
 const listPending = ref(true)
+/** Error message displayed instead of the list. */
 const listError = ref('')
 
 
+/** Stops listening to the `users` node. */
 const stopListening = onValue(
     dbRef($db, 'users'),
     (snapshot) => {
@@ -34,12 +45,22 @@ const stopListening = onValue(
 onUnmounted(stopListening)
 
 
+/** Values of the creation form, kept as a draft. */
 const form = useDraft('user', { displayName: '', email: '', role: 'collaborator' as Role })
+/** Whether an account is being created. */
 const creating = ref(false)
+/** Error message of the creation form. */
 const createError = ref('')
+/** Confirmation message of the creation form. */
 const createSuccess = ref('')
 
 
+/**
+ * Creates an account from the form and displays the result.
+ *
+ * @returns A promise resolved once the attempt is over; failures are displayed, not thrown.
+ * @todo Reset `form.value`: `Object.assign` targets the ref itself, so the form and its draft are not emptied.
+ */
 async function submit() {
   creating.value = true
   createError.value = ''
@@ -58,9 +79,17 @@ async function submit() {
 }
 
 
+/** Error message of the last role or activation change. */
 const actionError = ref('')
 
 
+/**
+ * Saves a change to a user's role or activation.
+ *
+ * @param user - User to change.
+ * @param changes - Fields to write.
+ * @returns A promise resolved once the attempt is over; failures are displayed, not thrown.
+ */
 async function save(user: UserProfile, changes: Partial<Pick<UserProfile, 'role' | 'active'>>) {
   actionError.value = ''
   try {
@@ -70,11 +99,19 @@ async function save(user: UserProfile, changes: Partial<Pick<UserProfile, 'role'
   }
 }
 
+/** User awaiting confirmation of their deletion; the modal is open while it is set. */
 const userToDelete = ref<UserProfile | null>(null)
+/** Whether a deletion is running. */
 const deleting = ref(false)
+/** Error message displayed in the deletion modal. */
 const deleteError = ref('')
 
 
+/**
+ * Opens the deletion modal for a user, except for the signed-in administrator.
+ *
+ * @param user - User to delete.
+ */
 function askDelete(user: UserProfile) {
   if (user.id === profile?.value?.id) return 
   deleteError.value = ''
@@ -82,6 +119,13 @@ function askDelete(user: UserProfile) {
 }
 
 
+/**
+ * Deletes the profile of the selected user and closes the modal.
+ * The Firebase Auth account remains, but the auth middleware signs out anyone without a profile.
+ * The modal stays open with an error message if the deletion fails.
+ *
+ * @returns A promise resolved once the attempt is over; failures are displayed, not thrown.
+ */
 async function confirmDelete() {
   const target = userToDelete.value
   if (!target) return

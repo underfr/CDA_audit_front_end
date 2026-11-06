@@ -1,5 +1,15 @@
+/**
+ * @file Non-admin roles cannot open the administration pages through their URL.
+ * @see docs/tests/ROLE-08.md
+ */
+
 describe('Abstract Support', () => {
-  // Petite fonction pour éviter de répéter la connexion 3 fois
+  /**
+   * Signs in through the form and waits for the dashboard to be fully displayed.
+   *
+   * @param {string} email - E-mail address of the account.
+   * @param {string} motDePasse - Password of the account.
+   */
   function seConnecter(email, motDePasse) {
     cy.get('input[name="email"]').type(email)
     cy.get('input[name="password"]').type(motDePasse)
@@ -10,7 +20,12 @@ describe('Abstract Support', () => {
     cy.contains('h2', 'en cours').should('be.visible')
   }
 
-  // On ouvre la page par son URL, puis on vérifie le retour au tableau de bord
+  /**
+   * Opens a page through its URL and checks that the user is sent back to the dashboard.
+   *
+   * @param {string} url - URL of the forbidden page.
+   * @param {string} titrePage - Heading of the forbidden page, which must not appear.
+   */
   function verifierAccesRefuse(url, titrePage) {
     cy.visit(url)
     cy.location('pathname').should('eq', '/dashboard')
@@ -27,6 +42,7 @@ describe('Abstract Support', () => {
     })
   })
 
+  /** Accounts tested, one per non-admin role, with the role label displayed in the header. */
   const comptes = [
     { role: 'collaborateur', libelle: 'Collaborateur', email: 'underfr31@icloud.com', motDePasse: 'dytgob-hYjqoc-5morpo' },
     { role: 'technicien', libelle: 'Technicien', email: 'q.civel@yahoo.fr', motDePasse: '1234quentin!' },

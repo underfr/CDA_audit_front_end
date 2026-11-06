@@ -227,30 +227,39 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @file Ticket creation form: validates the fields, keeps a draft, asks for confirmation
+ * in a modal, then emits the values for the parent page to save.
+ */
+
 import type { Category, TicketFormErrors, TicketPriority } from "~/types";
 
 withDefaults(
 	defineProps<{
-		/** Catégories actives uniquement. */
+		/** Active categories only. */
 		categories: Category[];
+		/** Validation messages displayed under the fields. */
 		errors?: TicketFormErrors;
+		/** Disables the button and shows a spinner while the ticket is being sent. */
 		pending?: boolean;
-		/** Erreur globale (Réseaux, refus de Firebase). */
+		/** Global error (network, refusal from Firebase). */
 		error?: string;
 	}>(),
 	{ errors: () => ({}) },
 );
 
-// Brouillon sauvegardé en localStorage (sans les pièces jointes : un fichier ne peut pas y être stocké)
+/** Draft saved in localStorage, without the attachments: a file cannot be stored there. */
 const draft = useDraft("ticket", { title: "", categoryId: "", priority: "medium" as TicketPriority, description: "" });
 const { title, categoryId, priority, description } = toRefs(draft.value);
 
 // Title
+/** Whether the trimmed title has between 5 and 120 characters. */
 const isTitleValid = computed(()=>
 	title.value.trim().length >=5 && title.value.trim().length <= 120
 )
 
 // Category
+/** Whether a category is selected. */
 const isCategoryValid = computed(()=>
 	categoryId.value !== ''
 )
@@ -258,15 +267,23 @@ const isCategoryValid = computed(()=>
 
 
 // Attachment
+/** Files selected by the user. */
 const attachments = ref<File[]>([])
 
+/**
+ * Stores the files selected in the file input.
+ *
+ * @param event - Change event of the file input.
+ */
 function onFileChange(event: Event) {
 	const input = event.target as HTMLInputElement
 	attachments.value = input.files ? Array.from(input.files) : []
 }
 
+/** MIME types accepted for attachments. */
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "application/pdf"]
 
+/** Whether there are at most 3 files, each of an allowed type and at most 2 MB. */
 const isAttachmentValid = computed(()=>
 	attachments.value.length <= 3 &&
 	attachments.value.every((file)=> file.size <=2 * 1024 * 1024) &&
@@ -275,14 +292,21 @@ const isAttachmentValid = computed(()=>
 )
 
 // Description
+/** Whether the trimmed description has between 10 and 2000 characters. */
 const isDescriptionValid = computed(()=>
 	description.value.trim().length >= 10 && description.value.trim().length <= 2000
 )
 
 const emit = defineEmits<{
+	/** Emitted once the user has confirmed, with the trimmed values and the selected files. */
 	submit: [data: { title: string; categoryId: string; priority: TicketPriority; description: string; attachments: File[] }]
 }>()
 
+/**
+ * Opens the confirmation modal when the form is valid.
+ *
+ * @todo Show a message when the attachments are invalid: the submission currently stops silently.
+ */
 function handleSubmit() {
 	if (!isTitleValid.value || !isCategoryValid.value || !isAttachmentValid.value || !isDescriptionValid.value ) return
 
@@ -291,12 +315,15 @@ function handleSubmit() {
 }
 
 // Confirmation modal
+/** Confirmation modal element. */
 const confirmDialog = ref<HTMLDialogElement | null>(null)
 
+/** Closes the confirmation modal, leaving the form as it is. */
 function closeConfirm() {
 	confirmDialog.value?.close()
 }
 
+/** Closes the confirmation modal and emits the form values. */
 function confirmSubmit() {
 	closeConfirm()
 	emit("submit", {

@@ -1,3 +1,9 @@
+/**
+ * @file Ticket form validation: titles and descriptions that are too short are reported, those that
+ * are too long are cut by the browser, and the confirmation modal stays closed.
+ * @see docs/tests/TICK-02.md
+ */
+
 describe('Abstract Support', () => {
     beforeEach(() => {
         cy.login('COLLABORATOR')

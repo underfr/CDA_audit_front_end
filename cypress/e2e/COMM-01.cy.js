@@ -1,3 +1,8 @@
+/**
+ * @file A valid comment posted on a ticket is displayed on that ticket.
+ * @see docs/tests/COMM-01.md
+ */
+
 describe('Abstract Support', () => {
     beforeEach(() => {
         cy.login('COLLABORATOR')

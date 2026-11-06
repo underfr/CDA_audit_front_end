@@ -1,11 +1,21 @@
 <script setup lang="ts">
+/**
+ * @file Form used to comment on a ticket. The parent owns the text and publishes the comment.
+ */
+
 defineProps<{
+  /** Disables the button and shows a spinner while the comment is being published. */
   pending?: boolean
+  /** Error message displayed above the field. */
   error?: string
 }>()
 
+/** Comment text, bound with `v-model`. */
 const body = defineModel<string>({ required: true })
-const emit = defineEmits<{ submit: [] }>()
+const emit = defineEmits<{
+  /** Emitted on submission. */
+  submit: []
+}>()
 </script>
 
 <template>

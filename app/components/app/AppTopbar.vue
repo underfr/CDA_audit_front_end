@@ -1,22 +1,37 @@
 <script setup lang="ts">
+/**
+ * @file Top bar of the main layout: quick ticket search, unread notifications indicator
+ * and identity of the signed-in user.
+ */
+
 import { listenNotifications, listenReadState, isNotificationUnread } from '~/services/firebase/notification.service'
 import { TicketService } from '~/services/firebase/ticket.service'
 import type { AppNotification, Ticket, UserProfile } from '~/types'
 
-const props = defineProps<{ user: UserProfile }>()
+const props = defineProps<{
+  /** Signed-in user; the listeners use the value received at setup. */
+  user: UserProfile
+}>()
 
 const { $db } = useNuxtApp()
 
+/** Notifications of the user, newest first. */
 const notifications = ref<AppNotification[]>([])
+/** Time of the last "mark all as read", in milliseconds. */
 const lastRead = ref(0)
+/** Notifications read one by one, by notification id. */
 const readIds = ref<Record<string, boolean>>({})
+/** Whether the read state has been received. */
 const readReady = ref(false)
 
+/** Whether the unread indicator is displayed; stays `false` until the read state is known. */
 const hasUnread = computed(
   () => readReady.value && notifications.value.some((n) => isNotificationUnread(n, lastRead.value, readIds.value)),
 )
 
+/** Stops listening to the notifications; does nothing before the component is mounted. */
 let stopNotifications = () => {}
+/** Stops listening to the read state; does nothing before the component is mounted. */
 let stopReadState = () => {}
 
 onMounted(() => {
@@ -31,11 +46,16 @@ onMounted(() => {
   })
 })
 
+/** Tickets of the user, in which the search looks. */
 const tickets = ref<Ticket[]>([])
+/** Stops listening to the tickets. */
 const stopTickets = new TicketService().listFor(props.user, (list) => { tickets.value = list })
 
+/** Text typed in the search field. */
 const search = ref('')
+/** Whether the results list may be displayed. */
 const open = ref(false)
+/** Five most recently updated tickets matching the search; empty when the search is blank. */
 const results = computed(() =>
   search.value.trim()
     ? filterTickets(tickets.value, { search: search.value, status: '', priority: '', categoryId: '' })
@@ -44,17 +64,24 @@ const results = computed(() =>
     : [],
 )
 
+/** Closes the results list and empties the search field. */
 function close() {
   open.value = false
   search.value = ''
 }
 
+/** Opens the ticket list filtered by the typed text, then resets the search. */
 function submit() {
   const value = search.value.trim()
   navigateTo({ path: '/tickets', query: value ? { search: value } : {} })
   close()
 }
 
+/**
+ * Closes the results list when the focus leaves the search form.
+ *
+ * @param event - Focus event fired by the form.
+ */
 function onFocusOut(event: FocusEvent) {
   if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null)) open.value = false
 }

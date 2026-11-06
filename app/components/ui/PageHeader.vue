@@ -1,9 +1,18 @@
 <script setup lang="ts">
+/**
+ * @file Page header: optional breadcrumb trail, main heading, subtitle and actions.
+ *
+ * @slot actions - Optional buttons or links displayed next to the title.
+ */
+
 import type { Breadcrumb } from '~/types'
 
 defineProps<{
+  /** Main heading (`h1`) of the page. */
   title: string
+  /** Optional text displayed under the title. */
   subtitle?: string
+  /** Optional breadcrumb trail, from the top level to the current page. */
   breadcrumbs?: Breadcrumb[]
 }>()
 </script>

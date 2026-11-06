@@ -1,37 +1,66 @@
 <script setup lang="ts">
+/**
+ * @file Ticket details page (`/tickets/:id`): description, comments, information, history and the
+ * actions allowed for the signed-in user. An unknown or forbidden ticket shows an empty state.
+ */
+
 import { TicketService } from '~/services/firebase/ticket.service'
 import type { HistoryEntry, Ticket, TicketPriority, UserProfile } from '~/types'
 
 const route = useRoute()
+/** Profile of the signed-in user. */
 const profile = useProfile()
+/** Database access for the tickets. */
 const ticketService = new TicketService()
+/** Id of the displayed ticket, taken from the URL. */
 const id = String(route.params.id)
+/** Status changes offered to the user on this ticket. */
 const transitions = computed(() => ticket.value && profile.value ? getTransitions(ticket.value, profile.value) : [])
 
+/** Displayed ticket, or `null` when it is missing, forbidden or not loaded yet. */
 const ticket = ref<Ticket | null>(null)
+/** Whether the first load of the ticket is running. */
 const pending = ref(true)
+/** History of the ticket, newest first. */
 const history = ref<HistoryEntry[]>([])
+/** Comments of the ticket, oldest first. */
 const comments = ref<TicketComment[]>([])
+/** Stops listening to the comments. */
 const stopComments = ticketService.watchComments(id,(list)=>{ comments.value = list})
+/** Stops listening to the ticket. */
 const stopListening = ticketService.watchById(
     id,
     (value) => { ticket.value = value; pending.value = false },
     () => { ticket.value = null; pending.value = false },
 )
+/** Stops listening to the history. */
 const stopHistory = ticketService.watchHistory(id, (entries) => { history.value = entries })
 onUnmounted(() => { stopListening(); stopHistory(); stopComments() })
 
 useHead({ title: () => ticket.value?.title ?? 'Ticket' })
 
+/** Whether the user is a manager or an admin, who can assign tickets and change their priority. */
 const isManager = profile.value?.role === 'manager' || profile.value?.role === 'admin'
+/** Technicians offered for assignment; only loaded for managers and admins. */
 const technicians = isManager ? useTechnicians() : ref<UserProfile[]>([])
 
+/** Whether a ticket action is running. */
 const actionPending = ref(false)
+/** Error message of the last ticket action. */
 const actionError = ref('')
+/** Text of the comment being written, kept as a draft per ticket. */
 const commentBody = useDraft(`comment:${id}`, '')
+/** Whether a comment is being published. */
 const commentPending = ref(false)
+/** Error message of the comment form. */
 const commentError = ref('')
 
+/**
+ * Publishes the typed comment and empties the field.
+ * The text is kept and an error message displayed if the publication fails.
+ *
+ * @returns A promise resolved once the attempt is over; failures are displayed, not thrown.
+ */
 async function onComment() {
   commentPending.value = true
   commentError.value = ''
@@ -45,6 +74,12 @@ async function onComment() {
     commentPending.value = false
   }
 }
+/**
+ * Runs a ticket action while managing its pending state and error message.
+ *
+ * @param action - Action to run.
+ * @returns A promise resolved once the attempt is over; failures are displayed, not thrown.
+ */
 async function runAction(action: () => Promise<void>) {
   actionPending.value = true
   actionError.value = ''
@@ -56,14 +91,29 @@ async function runAction(action: () => Promise<void>) {
     actionPending.value = false
   }
 }
+/**
+ * Applies a status change to the ticket.
+ *
+ * @param status - New status.
+ */
 function onStatus(status: TicketStatus) {
   runAction(() => ticketService.updateStatus(ticket.value!, status, profile.value!))
 }
+/**
+ * Assigns the ticket to a technician; does nothing if the technician is not in the loaded list.
+ *
+ * @param technicianId - Id of the selected technician.
+ */
 function onAssign(technicianId: string) {
   const technician = technicians.value.find((t) => t.id === technicianId)
   if (technician) runAction(() => ticketService.assign(ticket.value!, technician, profile.value!))
 }
 
+/**
+ * Changes the priority of the ticket.
+ *
+ * @param priority - New priority.
+ */
 function onPriority(priority: TicketPriority) {
   runAction(() => ticketService.updatePriority(ticket.value!, priority, profile.value!))
 }

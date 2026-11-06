@@ -1,8 +1,16 @@
 <script setup lang="ts">
+/**
+ * @file Badge showing the priority of a ticket.
+ */
+
 import type { TicketPriority } from '~/types'
 
-defineProps<{ priority: TicketPriority }>()
+defineProps<{
+  /** Priority to display. */
+  priority: TicketPriority
+}>()
 
+/** DaisyUI class of the badge for each priority. */
 const badgeClasses: Record<TicketPriority, string> = {
   low: 'badge-ghost',
   medium: 'badge-info',

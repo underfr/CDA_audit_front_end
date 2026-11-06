@@ -1,3 +1,7 @@
+/**
+ * @file Signing out leads back to the login page.
+ */
+
 describe('Abstract Support', () => {
   beforeEach(() => {
     cy.login('COLLABORATOR')

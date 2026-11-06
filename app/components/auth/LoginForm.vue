@@ -1,12 +1,23 @@
 <script setup lang="ts">
+/**
+ * @file Sign-in form. It only collects the credentials: the parent page signs the user in.
+ */
+
 defineProps<{
+  /** Disables the button and shows a spinner while the sign-in is running. */
   pending?: boolean
+  /** Error message displayed above the fields. */
   error?: string
 }>()
 
-const emit = defineEmits<{submit: [email: string, password: string]}>()
+const emit = defineEmits<{
+  /** Emitted on submission, with the typed e-mail address and password. */
+  submit: [email: string, password: string]
+}>()
 
+/** E-mail address typed by the user. */
 const email = ref('')
+/** Password typed by the user. */
 const password = ref('')
 </script>
 

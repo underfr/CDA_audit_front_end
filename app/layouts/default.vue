@@ -1,5 +1,13 @@
 <script setup lang="ts">
+/**
+ * @file Main layout of the signed-in pages: skip link, responsive sidebar and top bar.
+ *
+ * @slot default - Page content.
+ */
+
+/** Profile of the signed-in user. */
 const profile = useProfile()
+/** Navigation links allowed for the role of the signed-in user. */
 const items = computed(()=> NAVIGATION.filter(item=>!item.roles || (profile.value && item.roles.includes(profile.value.role))))
 </script>
 

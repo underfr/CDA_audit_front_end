@@ -1,11 +1,23 @@
 <script setup lang="ts">
+/**
+ * @file Sidebar of the main layout: logo, main navigation, new ticket link and sign-out button.
+ */
+
 import type { NavItem } from '~/types'
 import { signOut } from 'firebase/auth'
 
-defineProps<{ items: NavItem[] }>()
+defineProps<{
+  /** Navigation links to display, already filtered by role. */
+  items: NavItem[]
+}>()
 
 const { $auth } = useNuxtApp()
 
+/**
+ * Signs the user out, deletes the drafts kept on this computer and goes back to the login page.
+ *
+ * @returns A promise resolved once the navigation is complete.
+ */
 async function logout(){
   await signOut($auth)
   clearAllDrafts()

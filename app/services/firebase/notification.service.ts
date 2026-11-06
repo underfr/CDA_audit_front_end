@@ -1,7 +1,13 @@
+/**
+ * @file Notifications derived in real time from the tickets, comments and history of the
+ * Realtime Database, and per-user read state (`notificationsLastRead` and `notificationsRead` nodes).
+ */
+
 import { onValue, ref as dbRef, set } from 'firebase/database'
 import type { Database } from 'firebase/database'
 import type { AppNotification, UserProfile } from '~/types'
 
+/** Status labels used in notification messages. */
 const STATUS_LABELS: Record<string, string> = {
   new: 'Nouveau',
   in_progress: 'En cours',
@@ -9,6 +15,11 @@ const STATUS_LABELS: Record<string, string> = {
   closed: 'Fermé',
 }
 
+/**
+ * Priority labels used in notification messages.
+ *
+ * @todo Replace `critical` with `urgent`, the key used by the data model: urgent priorities are currently shown with their raw key.
+ */
 const PRIORITY_LABELS: Record<string, string> = {
   low: 'Basse',
   medium: 'Moyenne',
@@ -16,15 +27,34 @@ const PRIORITY_LABELS: Record<string, string> = {
   critical: 'Critique',
 }
 
+/**
+ * Translates a status key.
+ *
+ * @param status - Status key.
+ * @returns The label, or the key itself when it is unknown.
+ */
 function statusLabel(status: string) {
   return STATUS_LABELS[status] ?? status
 }
 
+/**
+ * Translates a priority key.
+ *
+ * @param priority - Priority key.
+ * @returns The label, or the key itself when it is unknown.
+ */
 function priorityLabel(priority: string) {
   return PRIORITY_LABELS[priority] ?? priority
 }
 
-// Un utilisateur a-t-il le droit de voir ce ticket ?
+/**
+ * Tells whether a user may be notified about a ticket: managers and admins see every ticket,
+ * technicians those they authored or are assigned to, and collaborators those they authored.
+ *
+ * @param user - User to check.
+ * @param ticket - Raw ticket read from the database.
+ * @returns `true` when the user may see the ticket.
+ */
 function canSeeTicket(user: UserProfile, ticket: Ticket) {
   if (user.role === 'admin' || user.role === 'manager') {
     return true
@@ -38,7 +68,16 @@ function canSeeTicket(user: UserProfile, ticket: Ticket) {
   return false
 }
 
-// Transforme un événement de l'historique en notification
+/**
+ * Converts a history event into a notification.
+ * Unknown event types produce a generic update message.
+ *
+ * @param ticketId - Id of the ticket concerned.
+ * @param ticketTitle - Title of the ticket concerned.
+ * @param eventId - Key of the history event.
+ * @param event - Raw history event read from the database.
+ * @returns The matching notification.
+ */
 function historyToNotification(ticketId: string, ticketTitle: string, eventId: string, event: any): AppNotification {
   let title = 'Mise à jour : ' + ticketTitle
   let message = event.actorName + ' a modifié le ticket.'
@@ -63,7 +102,16 @@ function historyToNotification(ticketId: string, ticketTitle: string, eventId: s
   }
 }
 
-// Construit la liste des notifications à partir des données Firebase
+/**
+ * Builds a user's notifications from the raw Firebase data.
+ * Each comment and history event of a visible ticket gives one notification.
+ *
+ * @param user - User receiving the notifications.
+ * @param tickets - Content of the `tickets` node, by ticket id.
+ * @param comments - Content of the `comments` node, by ticket id then comment id.
+ * @param history - Content of the `history` node, by ticket id then entry id.
+ * @returns The notifications, newest first.
+ */
 function buildNotifications(user: UserProfile, tickets: any, comments: any, history: any): AppNotification[] {
   const result: AppNotification[] = []
 
@@ -98,8 +146,15 @@ function buildNotifications(user: UserProfile, tickets: any, comments: any, hist
   return result
 }
 
-// Écoute en temps réel les tickets, commentaires et historique.
-// Renvoie une fonction pour arrêter l'écoute.
+/**
+ * Listens in real time to the tickets, comments and history, and rebuilds the user's notifications.
+ * The three nodes are read in full, then filtered on the client.
+ *
+ * @param db - Realtime Database instance.
+ * @param user - User receiving the notifications.
+ * @param onChange - Receives the notifications, newest first, on every change.
+ * @returns A function that stops listening.
+ */
 export function listenNotifications(
   db: Database,
   user: UserProfile,
@@ -112,7 +167,7 @@ export function listenNotifications(
   let commentsLoaded = false
   let historyLoaded = false
 
-  // On attend d'avoir reçu les 3 sources avant d'envoyer la liste
+  /** Sends the list, but only once the three sources have been received. */
   function rebuild() {
     if (!ticketsLoaded || !commentsLoaded || !historyLoaded) return
     onChange(buildNotifications(user, tickets, comments, history))
@@ -141,9 +196,15 @@ export function listenNotifications(
   }
 }
 
-// Écoute en temps réel ce que l'utilisateur a déjà lu :
-// - lastRead : la date du dernier « Tout marquer comme lu »
-// - readIds : les notifications lues une par une
+/**
+ * Listens in real time to what the user has already read.
+ *
+ * @param db - Realtime Database instance.
+ * @param userId - Id of the user.
+ * @param onChange - Receives `lastRead`, the time of the last "mark all as read" in milliseconds,
+ * and `readIds`, the notifications read one by one.
+ * @returns A function that stops listening.
+ */
 export function listenReadState(
   db: Database,
   userId: string,
@@ -154,6 +215,7 @@ export function listenReadState(
   let lastReadLoaded = false
   let readIdsLoaded = false
 
+  /** Sends the read state, but only once both sources have been received. */
   function send() {
     if (!lastReadLoaded || !readIdsLoaded) return
     onChange(lastRead, readIds)
@@ -176,8 +238,15 @@ export function listenReadState(
   }
 }
 
-// Une notification est non lue si elle est plus récente que le dernier
-// « Tout marquer comme lu » et qu'elle n'a pas été lue individuellement
+/**
+ * Tells whether a notification is unread: it must be more recent than the last
+ * "mark all as read" and must not have been read individually.
+ *
+ * @param notification - Notification to check.
+ * @param lastRead - Time of the last "mark all as read", in milliseconds.
+ * @param readIds - Notifications read one by one, by notification id.
+ * @returns `true` when the notification is unread.
+ */
 export function isNotificationUnread(
   notification: AppNotification,
   lastRead: number,
@@ -186,12 +255,25 @@ export function isNotificationUnread(
   return notification.createdAt > lastRead && !readIds[notification.id]
 }
 
-// Marque une seule notification comme lue
+/**
+ * Marks a single notification as read.
+ *
+ * @param db - Realtime Database instance.
+ * @param userId - Id of the user.
+ * @param notificationId - Id of the notification.
+ * @returns A promise resolved once the write is complete.
+ */
 export async function markAsRead(db: Database, userId: string, notificationId: string): Promise<void> {
   await set(dbRef(db, 'notificationsRead/' + userId + '/' + notificationId), true)
 }
 
-// Marque toutes les notifications comme lues
+/**
+ * Marks all the notifications as read, by storing the current time of the browser.
+ *
+ * @param db - Realtime Database instance.
+ * @param userId - Id of the user.
+ * @returns A promise resolved once the write is complete.
+ */
 export async function markAllAsRead(db: Database, userId: string): Promise<void> {
   await set(dbRef(db, 'notificationsLastRead/' + userId), Date.now())
 }

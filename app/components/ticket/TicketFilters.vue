@@ -1,13 +1,25 @@
 <script setup lang="ts">
+/**
+ * @file Filter form of the ticket list. Each criterion is a `v-model`; an empty string disables it.
+ */
+
 import type { Category, TicketPriority, TicketStatus } from '~/types'
 
-defineProps<{ categories: Pick<Category, 'id' | 'name'>[] }>()
+defineProps<{
+  /** Categories offered in the category filter. */
+  categories: Pick<Category, 'id' | 'name'>[]
+}>()
 
+/** Text searched in the tickets, bound with `v-model:search`. */
 const search = defineModel<string>('search', { required: true })
+/** Status to match, bound with `v-model:status`. */
 const status = defineModel<TicketStatus | ''>('status', { required: true })
+/** Priority to match, bound with `v-model:priority`. */
 const priority = defineModel<TicketPriority | ''>('priority', { required: true })
+/** Id of the category to match, bound with `v-model:categoryId`. */
 const categoryId = defineModel<string>('categoryId', { required: true })
 
+/** Empties all the criteria. */
 function reset() {
   search.value = ''
   status.value = ''

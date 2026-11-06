@@ -1,3 +1,8 @@
+/**
+ * @file A created ticket is still there after reloading the list and details pages.
+ * @see docs/tests/TICK-04.md
+ */
+
 describe('Abstract Support', () => {
   beforeEach(() => {
     cy.login('COLLABORATOR')

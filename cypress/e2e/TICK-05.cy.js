@@ -1,3 +1,8 @@
+/**
+ * @file The ticket creation form keeps its values after a page reload.
+ * @see docs/tests/TICK-05.md
+ */
+
 describe('Abstract Support', () => {
     beforeEach(() => {
         cy.login('COLLABORATOR')

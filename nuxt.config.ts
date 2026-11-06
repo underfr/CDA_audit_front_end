@@ -1,4 +1,9 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+/**
+ * @file Nuxt configuration: client-side rendered application, Tailwind CSS through Vite and
+ * Firebase settings exposed in the public runtime config.
+ * @see https://nuxt.com/docs/api/configuration/nuxt-config
+ */
+
 import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   ssr: false,
