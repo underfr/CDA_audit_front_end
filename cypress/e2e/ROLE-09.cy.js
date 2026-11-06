@@ -1,5 +1,5 @@
 describe('Abstract Support', () => {
-  // Petite fonction pour éviter de répéter la connexion 3 fois
+  // Fonction pour éviter de répéter la connexion 3 fois
   function seConnecter(email, motDePasse) {
     cy.get('input[name="email"]').type(email)
     cy.get('input[name="password"]').type(motDePasse)

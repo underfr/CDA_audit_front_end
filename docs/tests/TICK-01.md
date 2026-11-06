@@ -3,8 +3,7 @@
 - **Objectif :** Vérifier que le formulaire de création de ticket est fonctionnel.
 - **Préparation :** Compte non connecté, départ du test sur la page login
 - **Données utilisées :**
-    - Identifiant : jean.jacque@mail.com
-    - Mot de passe : Jean@31!
+    - Compte Administrateur 
     - Titre du ticket : « Mot de passe expiré, compte verrouillé »
     - Catégorie : Réseaux
     - Priorité : Urgent

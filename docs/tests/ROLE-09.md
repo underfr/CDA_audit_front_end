@@ -3,9 +3,9 @@
 - **Objectif :** Vérifier qu'un compte non administrateur ne peut modifier ni son propre rôle ni celui d'un autre compte, dans l'interface comme dans la base de données.
 - **Préparation :** Un compte collaborateur, un compte technicien et un compte responsable support existants, page de départ /login, aucune session ouverte
 - **Données utilisées :**
-    - Compte collaborateur : underfr31@icloud.com (autre compte visé : le technicien)
-    - Compte technicien : q.civel@yahoo.fr (autre compte visé : le responsable)
-    - Compte responsable : loicklaurent28@gmail.com (autre compte visé : le collaborateur)
+    - Compte collaborateur :(autre compte visé : le technicien)
+    - Compte technicien : (autre compte visé : le responsable)
+    - Compte responsable :  (autre compte visé : le collaborateur)
     - Valeur écrite : le rôle actuel du compte visé, jamais « admin », pour qu'aucune donnée ne change
 
 - **Actions (pour chacun des 3 comptes) :**

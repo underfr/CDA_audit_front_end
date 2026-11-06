@@ -3,8 +3,7 @@
 - **Objectif :** Vérifier que le formulaire de création de commentaire est fonctionnel.
 - **Préparation :** Compte non connecté, départ du test sur la page login, un ticket existant
 - **Données utilisées :**
-    - Identifiant : jean.jacque@mail.com
-    - Mot de passe : Jean@31!
+    - Compte Administrateur : 
     - Titre du ticket : Mot de passe expiré, compte verrouillé
     - Contenu du commentaire : « Je suis un commentaire »
 - **Actions :**

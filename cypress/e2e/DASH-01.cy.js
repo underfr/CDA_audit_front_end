@@ -9,4 +9,14 @@ describe('Abstract Support', () => {
     cy.location('pathname').should('eq', '/login')
     cy.get('input[name="email"]').should('be.visible')
   })
+
+  it('Refuse la lecture des tickets côté serveur sans être connecté', () => {
+    const projectId = 'cda-audit-front' 
+    cy.request({
+      url: `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/tickets`,
+      failOnStatusCode: false, // on attend une erreur : Cypress ne doit pas s'arrêter dessus
+    }).then((reponse) => {
+      expect(reponse.status).to.eq(403)
+    })
+  })
 })
