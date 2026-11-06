@@ -3,8 +3,7 @@
 - **Objectif :** Vérifier que le formulaire de création de ticket empêche l'envoi lorsque le titre ou la description ne respectent pas le nombre de caractères autorisé.
 - **Préparation :** Compte non connecté, départ du test sur la page login
 - **Données utilisées :**
-    - Identifiant : jean.jacque@mail.com
-    - Mot de passe : Jean@31!
+    - Compte Administrateur 
     - Catégorie : Réseaux
     - Priorité : Urgent
     - Titre (5 à 120 caractères autorisés) :

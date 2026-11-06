@@ -4,11 +4,9 @@
 - **Préparation :** [Deux comptes collaborateurs existants, page de départ /login, aucune session ouverte]
 - **Données utilisées :**
     - Compte collaborateur B (auteur du ticket) :
-        - Identifiant : benoitvicaireformation@gmail.com
-        - Mot de passe : Poilutes13!
+        
     - Compte collaborateur A (tente d'accéder au ticket) :
-        - Identifiant : underfr31@icloud.com
-        - Mot de passe : dytgob-hYjqoc-5morpo
+        
     - Ticket :
         - Titre : test confidentialité ticket entre collaborateurs
         - Catégorie : Réseaux

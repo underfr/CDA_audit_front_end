@@ -20,7 +20,6 @@ describe('Abstract Support', () => {
         cy.contains('button', 'Envoyer le ticket').click()
         cy.contains('button', /Confirmer l.envoi/).click()
         // Vérifier si le ticket est bien affiché
-        // On attend la redirection faite par l'appli après la création (un cy.visit l'interromprait)
         cy.location('pathname').should('eq', '/tickets')
         cy.contains('a', titre).should('be.visible')
     })
