@@ -16,12 +16,14 @@ describe('Abstract Support', () => {
   })
 
   it('Refuse la lecture des tickets côté serveur sans être connecté', () => {
-    const projectId = 'cda-audit-front' 
-    cy.request({
-      url: `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/tickets`,
-      failOnStatusCode: false, // on attend une erreur : Cypress ne doit pas s'arrêter dessus
-    }).then((reponse) => {
-      expect(reponse.status).to.eq(403)
+    cy.visit('/login')
+    cy.window().its('__NUXT__.config.public.firebase').then((firebase) => {
+      cy.request({
+        url: `${firebase.databaseURL}/tickets.json`,
+        failOnStatusCode: false, // on attend un refus : Cypress ne doit pas s'arrêter dessus
+      }).then((response) => {
+        expect(response.status).to.eq(401)
+      })
     })
   })
 })
