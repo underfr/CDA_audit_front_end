@@ -38,21 +38,32 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @file Support analytics page (`/analytics`, managers and admins only): key indicators, workload,
+ * tickets by status, urgent tickets and recent activity.
+ */
+
 import { TicketService } from '~/services/firebase/ticket.service'
 import type { BarItem, HistoryEntry, Ticket } from '~/types'
 
 definePageMeta({ roles: ['manager', 'admin'] })
 useHead({ title: 'Pilotage' })
 
+/** Database access for the tickets. */
 const ticketService = new TicketService()
+/** Active technicians. */
 const technicians = useTechnicians()
 
+/** All the tickets, updated in real time. */
 const tickets = ref<Ticket[]>([])
+/** Stops listening to the tickets. */
 const stopTickets = ticketService.list((list) => {
   tickets.value = list
 })
 
+/** History of all the tickets, updated in real time. */
 const history = ref<HistoryEntry[]>([])
+/** Stops listening to the history. */
 const stopHistory = ticketService.watchAllHistory((entries) => {
   history.value = entries
 })
@@ -62,17 +73,24 @@ onUnmounted(() => {
   stopHistory()
 })
 
+/** Key indicators of the page. */
 const analyticsStats = computed(() => computeAnalyticsStats(tickets.value))
+/** Number of tickets per status. */
 const ticketsByStatus = computed(() => computeTicketsByStatus(tickets.value))
+/** Number of open tickets per technician. */
 const workloadByTechnician = computed(() => computeWorkloadByTechnician(tickets.value, technicians.value))
 
+/** Open urgent tickets, oldest first. */
 const urgentTickets = computed(() =>
   tickets.value
     .filter(t => isOpen(t) && t.priority === 'urgent')
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
 )
 
-// La création d'un ticket n'est pas écrite dans `history` : on la reconstruit depuis le ticket.
+/**
+ * Ten most recent activity entries, with the title of their ticket.
+ * Ticket creation is not written in `history`, so it is rebuilt from the tickets.
+ */
 const activityFeed = computed(() => {
   const titles = new Map(tickets.value.map(t => [t.id, t.title]))
   const creations: HistoryEntry[] = tickets.value.map(t => ({
@@ -88,6 +106,11 @@ const activityFeed = computed(() => {
     .slice(0, 10)
 })
 
-/** Valeur maximale des barres, pour que la plus longue remplisse la largeur. */
+/**
+ * Computes the value of a full bar, so that the longest one fills the width.
+ *
+ * @param items - Rows of the bar list.
+ * @returns The highest value, at least 1.
+ */
 const maxOf = (items: BarItem[]) => Math.max(1, ...items.map(item => item.value))
 </script>

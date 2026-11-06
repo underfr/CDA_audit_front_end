@@ -1,5 +1,16 @@
+/**
+ * @file Non-admin roles cannot change a role, neither in the interface nor directly in the database
+ * with their own token. The tests write back the current role, so no data changes.
+ * @see docs/tests/ROLE-09.md
+ */
+
 describe('Abstract Support', () => {
-  // Petite fonction pour éviter de répéter la connexion 3 fois
+  /**
+   * Signs in through the form and waits for the dashboard to be fully displayed.
+   *
+   * @param {string} email - E-mail address of the account.
+   * @param {string} motDePasse - Password of the account.
+   */
   function seConnecter(email, motDePasse) {
     cy.get('input[name="email"]').type(email)
     cy.get('input[name="password"]').type(motDePasse)
@@ -10,8 +21,14 @@ describe('Abstract Support', () => {
     cy.contains('h2', 'en cours').should('be.visible')
   }
 
-  // Récupère le jeton Firebase d'un compte, comme le ferait un utilisateur malveillant
-  // log: false pour ne pas afficher le mot de passe et le jeton dans Cypress
+  /**
+   * Gets the Firebase token of an account, as a malicious user would.
+   * `log: false` keeps the password and token out of the Cypress log.
+   *
+   * @param {{apiKey: string}} firebase - Public Firebase configuration of the application.
+   * @param {{email: string, motDePasse: string}} compte - Account to sign in with.
+   * @returns {Cypress.Chainable<{uid: string, jeton: string}>} The uid and token of the account.
+   */
   function recupererJeton(firebase, compte) {
     return cy.request({
       method: 'POST',
@@ -21,7 +38,13 @@ describe('Abstract Support', () => {
     }).then(({ body }) => ({ uid: body.localId, jeton: body.idToken }))
   }
 
-  // Lit le rôle d'un compte avec son propre jeton
+  /**
+   * Reads the role of an account with its own token.
+   *
+   * @param {{databaseURL: string}} firebase - Public Firebase configuration of the application.
+   * @param {{uid: string, jeton: string}} session - Uid and token of the account.
+   * @returns {Cypress.Chainable<string>} The stored role.
+   */
   function lireRole(firebase, { uid, jeton }) {
     return cy.request({
       url: `${firebase.databaseURL}/users/${uid}/role.json?auth=${jeton}`,
@@ -29,9 +52,17 @@ describe('Abstract Support', () => {
     }).its('body')
   }
 
-  // Tente d'écrire le rôle directement dans la base.
-  // Sécurité : on réécrit toujours le rôle ACTUEL du compte, jamais « admin ».
-  // Si la base accepte, le test échoue mais aucune donnée ne change.
+  /**
+   * Tries to write a role directly in the database.
+   * Safety: always write back the CURRENT role of the account, never `admin`.
+   * If the database accepts the write, the test fails but no data changes.
+   *
+   * @param {{databaseURL: string}} firebase - Public Firebase configuration of the application.
+   * @param {string} uidCible - Uid of the targeted account.
+   * @param {string} role - Role to write.
+   * @param {string} jeton - Token used for the request.
+   * @returns {Cypress.Chainable<number>} The HTTP status of the response.
+   */
   function tenterEcriture(firebase, uidCible, role, jeton) {
     return cy.request({
       method: 'PUT',
@@ -51,10 +82,14 @@ describe('Abstract Support', () => {
     })
   })
 
+  /** Collaborator account tested. */
   const collaborateur = { nom: 'collaborateur', libelle: 'Collaborateur', role: 'collaborator', email: 'underfr31@icloud.com', motDePasse: 'dytgob-hYjqoc-5morpo' }
+  /** Technician account tested. */
   const technicien = { nom: 'technicien', libelle: 'Technicien', role: 'technician', email: 'q.civel@yahoo.fr', motDePasse: '1234quentin!' }
+  /** Support manager account tested. */
   const responsable = { nom: 'responsable', libelle: 'Responsable du support', role: 'manager', email: 'loicklaurent28@gmail.com', motDePasse: 'nuqwa7-dowkun-gapguJ' }
 
+  /** Scenarios: each account tries to change its own role, then the role of the other account. */
   const cas = [
     { compte: collaborateur, autre: technicien },
     { compte: technicien, autre: responsable },

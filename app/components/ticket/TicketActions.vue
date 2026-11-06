@@ -1,22 +1,38 @@
 <script setup lang="ts">
+/**
+ * @file Actions available on a ticket: status changes and, for managers, assignment and priority.
+ * It only emits the choices: the parent page applies them.
+ */
+
 import type { StatusTransition, TicketPriority, UserProfile, TicketStatus } from '~/types'
 
 const props = defineProps<{
+  /** Status changes offered to the user. */
   transitions: StatusTransition[]
+  /** Shows the assignment and priority forms. */
   canManage?: boolean
+  /** Technicians offered for assignment. */
   technicians: UserProfile[]
+  /** Id of the assigned technician, or `null` while unassigned. */
   assigneeId: string | null
+  /** Current priority of the ticket. */
   priority: TicketPriority
+  /** Disables the buttons while an action is running. */
   pending?: boolean
 }>()
 
 const emit = defineEmits<{
+  /** Emitted when a status change is chosen. */
   status: [status: TicketStatus]
+  /** Emitted when the assignment form is submitted. */
   assign: [technicianId: string]
+  /** Emitted when the priority form is submitted. */
   priority: [priority: TicketPriority]
 }>()
 
+/** Technician selected in the form; follows the `assigneeId` prop when it changes. */
 const selectedAssignee = ref(props.assigneeId ?? '')
+/** Priority selected in the form; follows the `priority` prop when it changes. */
 const selectedPriority = ref(props.priority)
 watch(() => props.assigneeId, (value) => { selectedAssignee.value = value ?? '' })
 watch(() => props.priority, (value) => { selectedPriority.value = value })

@@ -3,8 +3,7 @@
 - **Objectif :** Vérifier que les tickets au statut « En cours » sont bien affichés sur la page Dashboard.
 - **Préparation :** Compte non connecté, départ du test sur la page login
 - **Données utilisées :**
-    - Identifiant : jean.jacque@mail.com
-    - Mot de passe : Jean@31!
+    - Compte Administrateur
     - Ticket :
         - Titre : Mot de passe expiré, compte verrouillé
         - Catégorie : Réseaux

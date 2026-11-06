@@ -1,3 +1,8 @@
+/**
+ * @file A support manager can assign a ticket to a technician.
+ * @see docs/tests/TICK-11.md
+ */
+
 describe('Abstract Support', () => {
   beforeEach(() => {
     cy.login('MANAGER')

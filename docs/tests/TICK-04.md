@@ -3,6 +3,7 @@
 - **Objectif :** Vérifier qu'un ticket créé via le formulaire est bien enregistré dans Firebase et reste affiché après un rechargement de la page.
 - **Préparation :** Compte connecté, départ du test page dashboard
 - **Données utilisées :**
+    - Compte Collaborateur
     - titre du ticket : "Imprimante hors service " + horodatage (titre unique à chaque passage)
     - Catégorie : Réseau
     - Priorité : Élevée

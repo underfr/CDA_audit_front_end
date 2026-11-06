@@ -3,9 +3,9 @@
 - **Objectif :** Vérifier que les pages d'administration (comptes, rôles, catégories, paramètres) restent réservées à l'administrateur, même en saisissant directement leur URL.
 - **Préparation :** Un compte collaborateur, un compte technicien et un compte responsable support existants, page de départ /login, aucune session ouverte
 - **Données utilisées :**
-    - Compte collaborateur : underfr31@icloud.com
-    - Compte technicien : q.civel@yahoo.fr
-    - Compte responsable : loicklaurent28@gmail.com
+    - Compte collaborateur : 
+    - Compte technicien : 
+    - Compte responsable : 
     - Pages testées :
         - /admin/users (comptes et rôles)
         - /admin/categories (catégories)

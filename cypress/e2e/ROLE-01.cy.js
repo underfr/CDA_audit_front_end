@@ -1,3 +1,8 @@
+/**
+ * @file A collaborator cannot see another collaborator's ticket, in their list or through its URL.
+ * @see docs/tests/ROLE-01.md
+ */
+
 describe('Abstract Support', () => {
     it("Un collaborateur ne peut pas consulter le ticket d'un autre collaborateur", () => {
         const titre = `test confidentialité ticket entre collaborateurs ${Date.now()}`

@@ -1,9 +1,20 @@
 <script setup lang="ts">
+/**
+ * @file Compact ticket list of the dashboard, with its loading, error and empty states.
+ */
+
 import type { Ticket } from '~/types'
 
 defineProps<{
+  /** Tickets to display, in the given order. */
   tickets: Ticket[]
+  /** Shows the loading state instead of the list. */
   pending?: boolean
+  /**
+   * Error message displayed instead of the list.
+   *
+   * @todo Wire the retry button displayed with this message: it has no handler yet.
+   */
   error?: string
 }>()
 </script>

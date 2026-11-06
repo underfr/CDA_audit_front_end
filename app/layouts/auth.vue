@@ -1,3 +1,8 @@
+<!--
+  @file Layout of the signed-out pages: the logo above a centred card.
+
+  @slot default - Page content, displayed in the card.
+-->
 <template>
   <main id="main" class="grid min-h-screen place-items-center bg-base-200 p-4">
     <div class="w-full max-w-md space-y-6">

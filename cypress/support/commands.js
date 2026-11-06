@@ -1,5 +1,16 @@
-// Connexion avec un compte de test. Les identifiants viennent de cypress.env.json (local)
-// ou des secrets CYPRESS_<ROLE>_EMAIL / CYPRESS_<ROLE>_PASSWORD (GitHub Actions).
+/**
+ * @file Custom Cypress commands.
+ */
+
+/**
+ * Signs in with a test account from an empty Firebase session, then waits for the dashboard.
+ * The credentials come from `cypress.env.json` (local)
+ * or from the `CYPRESS_<ROLE>_EMAIL` / `CYPRESS_<ROLE>_PASSWORD` secrets (GitHub Actions).
+ *
+ * @example cy.login('MANAGER')
+ * @param {string} role - Upper-case account name, for example `COLLABORATOR` or `TECHNICIAN`.
+ * @throws {Error} When the credentials of this account are missing.
+ */
 Cypress.Commands.add('login', (role) => {
     const emailKey = `${role}_EMAIL`
     const passwordKey = `${role}_PASSWORD`

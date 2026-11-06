@@ -1,3 +1,8 @@
+/**
+ * @file Signing in with valid credentials leads to the dashboard.
+ * @see docs/tests/AUTH-01.md
+ */
+
 describe('Abstract Support', () => {
   it('Connexion avec les données valides', () => {
     cy.login('COLLABORATOR')

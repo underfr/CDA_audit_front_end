@@ -1,3 +1,6 @@
+<!--
+  @file Logo and name of the application.
+-->
 <template>
   <div class="flex items-center gap-3">
     <span class="grid size-10 shrink-0 place-items-center rounded-field bg-primary font-bold text-primary-content" aria-hidden="true">AS</span>

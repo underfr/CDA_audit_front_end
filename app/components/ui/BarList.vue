@@ -1,8 +1,14 @@
 <script setup lang="ts">
+/**
+ * @file List of labelled progress bars.
+ */
+
 import type { BarItem } from '~/types'
 
 defineProps<{
+  /** Rows to display, in the given order. */
   items: BarItem[]
+  /** Value corresponding to a full bar. */
   max: number
 }>()
 </script>

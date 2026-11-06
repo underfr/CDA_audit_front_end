@@ -1,5 +1,15 @@
 <script setup lang="ts">
-defineProps<{ title: string }>()
+/**
+ * @file Titled card used to group content on a page.
+ *
+ * @slot default - Content of the card.
+ * @slot actions - Optional links or buttons displayed next to the title.
+ */
+
+defineProps<{
+  /** Heading (`h2`) of the card. */
+  title: string
+}>()
 </script>
 
 <template>

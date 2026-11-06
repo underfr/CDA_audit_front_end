@@ -4,11 +4,9 @@
 - **Préparation :** Compte non connecté, départ du test sur la page login avec le compte responsable support
 - **Données utilisées :**
     - Compte responsable support :
-        - Identifiant : loicklaurent28@gmail.com
-        - Mot de passe : nuqwa7-dowkun-gapguJ
+        
     - Compte technicien :
-        - Identifiant : q.civel@yahoo.fr
-        - Mot de passe : 1234quentin!
+       
     - Ticket :
         - Titre : test visibilité des tickets affectés au technicien
         - Catégorie : Réseaux

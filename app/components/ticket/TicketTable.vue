@@ -1,11 +1,22 @@
 <script setup lang="ts">
+/**
+ * @file Detailed ticket table, with its loading, error and empty states.
+ */
+
 import type { Ticket } from '~/types'
 
 defineProps<{
+  /** Tickets to display, in the given order. */
   tickets: Ticket[]
-  /** Titre du tableau, lu par les lecteurs d'écran. */
+  /** Title of the table, read by screen readers. */
   caption: string
+  /** Shows the loading state instead of the table. */
   pending?: boolean
+  /**
+   * Error message displayed instead of the table.
+   *
+   * @todo Wire the retry button displayed with this message: it has no handler yet.
+   */
   error?: string
 }>()
 </script>
